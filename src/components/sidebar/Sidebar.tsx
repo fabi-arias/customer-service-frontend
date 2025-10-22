@@ -7,7 +7,6 @@ import {
   Plus, 
   MessageSquare, 
   Bot, 
-  Trash2, 
   User, 
   ChevronDown, 
   ChevronRight,
@@ -18,10 +17,9 @@ import {
 
 interface SidebarProps {
   onNewChat: () => void;
-  onClearChat: () => void;
 }
 
-export function Sidebar({ onNewChat, onClearChat }: SidebarProps) {
+export function Sidebar({ onNewChat }: SidebarProps) {
   const [isAgentInfoExpanded, setIsAgentInfoExpanded] = useState(false);
   const [agentInfo, setAgentInfo] = useState<AgentInfo | null>(null);
   const [connectionTest, setConnectionTest] = useState<ConnectionTest | null>(null);
@@ -63,13 +61,25 @@ export function Sidebar({ onNewChat, onClearChat }: SidebarProps) {
   };
 
   return (
-    <div className="w-80 bg-gray-50 border-r border-gray-200 flex flex-col h-full">
+    <div className="bg-gray-50 border-r border-gray-200 flex flex-col h-full">
 
       {/* Navigation */}
       <div className="p-4 space-y-2">
         <button
           onClick={onNewChat}
-          className="w-full flex items-center gap-3 px-3 py-2 text-left text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+          className="w-full flex items-center gap-3 px-3 py-2 text-left text-white rounded-lg transition-colors"
+          style={{
+            backgroundColor: '#00A9E0',
+            boxShadow: '0px 4px 4px rgba(0, 0, 0, 0.25)'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = '#D9F2FA';
+            e.currentTarget.style.color = '#000000';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = '#00A9E0';
+            e.currentTarget.style.color = '#ffffff';
+          }}
         >
           <Plus className="w-5 h-5" />
           Iniciar nuevo chat
@@ -77,7 +87,11 @@ export function Sidebar({ onNewChat, onClearChat }: SidebarProps) {
         
         <button
           disabled
-          className="w-full flex items-center gap-3 px-3 py-2 text-left text-gray-400 cursor-not-allowed rounded-lg"
+          className="w-full flex items-center gap-3 px-3 py-2 text-left text-white cursor-not-allowed rounded-lg"
+          style={{
+            backgroundColor: '#00A9E0',
+            boxShadow: '0px 4px 4px rgba(0, 0, 0, 0.25)'
+          }}
         >
           <MessageSquare className="w-5 h-5" />
           Conversación actual
@@ -162,31 +176,30 @@ export function Sidebar({ onNewChat, onClearChat }: SidebarProps) {
         )}
       </div>
 
-      {/* Clear Chat */}
-      <div className="px-4 mt-4">
-        <button
-          onClick={onClearChat}
-          className="w-full flex items-center gap-3 px-3 py-2 text-left text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
-        >
-          <Trash2 className="w-5 h-5" />
-          Limpiar chat
-        </button>
-      </div>
 
       {/* User Profile */}
       <div className="mt-auto p-4">
-        <div className="flex items-center gap-3 p-3 bg-blue-50 rounded-lg">
-          <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
-            <User className="w-4 h-4 text-white" />
+        <div className="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-lg">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ backgroundColor: '#D9F2FA' }}>
+              <User className="w-5 h-5" style={{ color: '#00A9E0' }} />
+            </div>
+            <div>
+              <div className="font-medium text-gray-900">Usuario</div>
+            </div>
           </div>
-          <div>
-            <div className="font-semibold text-gray-900">Usuario</div>
-            <div className="text-xs text-gray-600">Activo</div>
-          </div>
+          <button className="p-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+            <div className="flex flex-col gap-1">
+              <div className="w-1 h-1 bg-gray-600 rounded-full"></div>
+              <div className="w-1 h-1 bg-gray-600 rounded-full"></div>
+              <div className="w-1 h-1 bg-gray-600 rounded-full"></div>
+            </div>
+          </button>
         </div>
       </div>
     </div>
   );
 }
+
 
 

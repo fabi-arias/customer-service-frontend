@@ -49,19 +49,19 @@ export function ContactCard({ contact }: ContactCardProps) {
               <h5 className="font-semibold text-gray-900 mb-3">Información Básica</h5>
               <div className="space-y-2 text-sm">
                 <div>
-                  <span className="font-medium text-gray-700">ID:</span>
+                  <span className="font-bold text-gray-700">ID:</span>
                   <span className="ml-2 text-gray-900">{contactId}</span>
                 </div>
                 <div>
-                  <span className="font-medium text-gray-700">Nombre:</span>
+                  <span className="font-bold text-gray-700">Nombre:</span>
                   <span className="ml-2 text-gray-900">{name}</span>
                 </div>
                 <div>
-                  <span className="font-medium text-gray-700">Email:</span>
+                  <span className="font-bold text-gray-700">Email:</span>
                   <span className="ml-2 text-gray-900">{email}</span>
                 </div>
                 <div>
-                  <span className="font-medium text-gray-700">Teléfono:</span>
+                  <span className="font-bold text-gray-700">Teléfono:</span>
                   <span className="ml-2 text-gray-900">{phone}</span>
                 </div>
               </div>
@@ -72,11 +72,11 @@ export function ContactCard({ contact }: ContactCardProps) {
               <h5 className="font-semibold text-gray-900 mb-3">Detalles Adicionales</h5>
               <div className="space-y-2 text-sm">
                 <div>
-                  <span className="font-medium text-gray-700">Creado:</span>
+                  <span className="font-bold text-gray-700">Creado:</span>
                   <span className="ml-2 text-gray-900">{createdDate}</span>
                 </div>
                 <div>
-                  <span className="font-medium text-gray-700">Propietario:</span>
+                  <span className="font-bold text-gray-700">Propietario:</span>
                   <span className="ml-2 text-gray-900">{owner}</span>
                 </div>
               </div>
@@ -87,5 +87,6 @@ export function ContactCard({ contact }: ContactCardProps) {
     </div>
   );
 }
+
 
 

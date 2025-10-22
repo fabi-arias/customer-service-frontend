@@ -1,3 +1,4 @@
+// src/app/layout.tsx
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Figtree, Inter } from "next/font/google";
 import "./globals.css";
@@ -25,7 +26,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "ChatMuscle - Asistente de Servicio al Cliente",
+  title: "Spot - Asistente de Servicio al Cliente",
   description: "Sistema de chat inteligente para consultas sobre tickets y contactos",
 };
 

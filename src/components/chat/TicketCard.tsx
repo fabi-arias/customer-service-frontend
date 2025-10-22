@@ -55,27 +55,27 @@ export function TicketCard({ ticket }: TicketCardProps) {
               <h5 className="font-semibold text-gray-900 mb-3">Información Básica</h5>
               <div className="space-y-2 text-sm">
                 <div>
-                  <span className="font-medium text-gray-700">ID:</span>
+                  <span className="font-bold text-gray-700">ID:</span>
                   <span className="ml-2 text-gray-900">{ticketId}</span>
                 </div>
                 <div>
-                  <span className="font-medium text-gray-700">Asunto:</span>
+                  <span className="font-bold text-gray-700">Asunto:</span>
                   <span className="ml-2 text-gray-900">{subject}</span>
                 </div>
                 <div>
-                  <span className="font-medium text-gray-700">Itinerario:</span>
+                  <span className="font-bold text-gray-700">Itinerario:</span>
                   <span className="ml-2 text-gray-900">{itinerary}</span>
                 </div>
                 <div>
-                  <span className="font-medium text-gray-700">Prioridad:</span>
+                  <span className="font-bold text-gray-700">Prioridad:</span>
                   <span className="ml-2 text-gray-900">{priority}</span>
                 </div>
                 <div>
-                  <span className="font-medium text-gray-700">Categoría:</span>
+                  <span className="font-bold text-gray-700">Categoría:</span>
                   <span className="ml-2 text-gray-900">{category}</span>
                 </div>
                 <div>
-                  <span className="font-medium text-gray-700">Estado:</span>
+                  <span className="font-bold text-gray-700">Estado:</span>
                   <span className="ml-2 text-gray-900">{status}</span>
                 </div>
               </div>
@@ -86,19 +86,19 @@ export function TicketCard({ ticket }: TicketCardProps) {
               <h5 className="font-semibold text-gray-900 mb-3">Detalles Adicionales</h5>
               <div className="space-y-2 text-sm">
                 <div>
-                  <span className="font-medium text-gray-700">Creado:</span>
+                  <span className="font-bold text-gray-700">Creado:</span>
                   <span className="ml-2 text-gray-900">{createdDate}</span>
                 </div>
                 <div>
-                  <span className="font-medium text-gray-700">Cerrado:</span>
+                  <span className="font-bold text-gray-700">Cerrado:</span>
                   <span className="ml-2 text-gray-900">{closedDate}</span>
                 </div>
                 <div>
-                  <span className="font-medium text-gray-700">Origen:</span>
+                  <span className="font-bold text-gray-700">Origen:</span>
                   <span className="ml-2 text-gray-900">{source}</span>
                 </div>
                 <div>
-                  <span className="font-medium text-gray-700">Propietario:</span>
+                  <span className="font-bold text-gray-700">Propietario:</span>
                   <span className="ml-2 text-gray-900">{owner}</span>
                 </div>
               </div>
@@ -129,5 +129,6 @@ export function TicketCard({ ticket }: TicketCardProps) {
     </div>
   );
 }
+
 
 

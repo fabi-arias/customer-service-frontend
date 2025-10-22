@@ -1,3 +1,4 @@
+// src/lib/api.ts
 // API client for communicating with the FastAPI backend
 import axios from 'axios';
 import { ChatRequest, ChatResponse, AgentInfo, ConnectionTest, DatabaseStats } from '@/types';
@@ -6,6 +7,7 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
+  timeout: 120000, // 2 minutos de timeout
   headers: {
     'Content-Type': 'application/json',
   },
@@ -59,5 +61,6 @@ export const systemApi = {
 };
 
 export default api;
+
 
 

@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import { ChatMessage as ChatMessageType } from '@/types';
 import { chatApi } from '@/lib/api';
 import { ChatMessage } from './ChatMessage';
-import { Send, Loader2, Bot } from 'lucide-react';
+import { ArrowUp, Loader2, Bot } from 'lucide-react';
 import Image from 'next/image';
 
 export function ChatInterface() {
@@ -81,14 +81,26 @@ export function ChatInterface() {
         setMessages(prev => [...prev, errorMessage]);
       }
     } catch (error) {
-      const errorMessage: ChatMessageType = {
+      let errorMessage = 'Error desconocido';
+      
+      if (error instanceof Error) {
+        if (error.message.includes('timeout')) {
+          errorMessage = '⏱️ La consulta está tardando mucho. El sistema está procesando tu solicitud, por favor espera...';
+        } else if (error.message.includes('Network Error')) {
+          errorMessage = '🌐 Error de conexión con el servidor. Verifica que el backend esté ejecutándose.';
+        } else {
+          errorMessage = `❌ Error: ${error.message}`;
+        }
+      }
+
+      const errorChatMessage: ChatMessageType = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
-        content: `❌ Error de conexión: ${error instanceof Error ? error.message : 'Error desconocido'}`,
+        content: errorMessage,
         timestamp: new Date().toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })
       };
 
-      setMessages(prev => [...prev, errorMessage]);
+      setMessages(prev => [...prev, errorChatMessage]);
     } finally {
       setIsLoading(false);
     }
@@ -140,16 +152,17 @@ export function ChatInterface() {
         
         {/* Loading indicator */}
         {isLoading && (
-          <div className="flex gap-3 p-4 bg-gray-50">
-            <div className="flex-shrink-0 w-8 h-8 rounded-full bg-green-500 flex items-center justify-center">
-              <Bot className="w-4 h-4 text-white" />
+          <div className="flex gap-3 p-4">
+            <div className="flex-shrink-0 w-8 h-8 rounded-full bg-black flex items-center justify-center">
+              <span className="text-white text-sm font-bold">&gt;&gt;</span>
             </div>
             <div className="flex-1">
-              <div className="flex items-center gap-2 mb-2">
-                <span className="font-medium text-sm">Asistente</span>
-                <Loader2 className="w-4 h-4 animate-spin text-gray-500" />
+              <div className="bg-gray-50 rounded-lg p-3 mb-1">
+                <div className="flex items-center gap-2">
+                  <Loader2 className="w-4 h-4 animate-spin text-gray-500" />
+                  <span className="text-gray-500 italic">Pensando...</span>
+                </div>
               </div>
-              <div className="text-gray-500 italic">🤔 Pensando...</div>
             </div>
           </div>
         )}
@@ -159,27 +172,41 @@ export function ChatInterface() {
 
       {/* Chat Input */}
       <div className="border-t border-gray-200 p-4">
-        <div className="flex gap-2">
-          <textarea
-            value={inputMessage}
-            onChange={(e) => setInputMessage(e.target.value)}
-            onKeyPress={handleKeyPress}
-            placeholder="Escribe tu mensaje aquí..."
-            className="flex-1 resize-none border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            rows={1}
-            disabled={isLoading}
-          />
+        <div className="flex items-center gap-3">
+          <div className="flex-1 bg-gray-100 rounded-full px-4 py-3">
+            <textarea
+              value={inputMessage}
+              onChange={(e) => setInputMessage(e.target.value)}
+              onKeyPress={handleKeyPress}
+              placeholder="Escribe tu mensaje aquí..."
+              className="w-full resize-none bg-transparent border-none outline-none text-gray-900 placeholder-gray-500"
+              rows={1}
+              disabled={isLoading}
+            />
+          </div>
           <button
             onClick={sendMessage}
             disabled={!inputMessage.trim() || isLoading}
-            className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+            className="w-10 h-10 text-white rounded-full disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center transition-colors"
+            style={{
+              backgroundColor: '#0498C8'
+            }}
+            onMouseEnter={(e) => {
+              if (!e.currentTarget.disabled) {
+                e.currentTarget.style.backgroundColor = '#0380A6';
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (!e.currentTarget.disabled) {
+                e.currentTarget.style.backgroundColor = '#0498C8';
+              }
+            }}
           >
             {isLoading ? (
-              <Loader2 className="w-4 h-4 animate-spin" />
+              <Loader2 className="w-5 h-5 animate-spin" />
             ) : (
-              <Send className="w-4 h-4" />
+              <ArrowUp className="w-5 h-5" />
             )}
-            Enviar
           </button>
         </div>
       </div>

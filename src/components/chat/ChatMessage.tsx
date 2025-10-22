@@ -15,34 +15,27 @@ export function ChatMessage({ message }: ChatMessageProps) {
   const parsedResponse = !isUser ? parseBedrockResponse(message.content) : null;
 
   return (
-    <div className={`flex gap-3 p-4 ${isUser ? 'bg-blue-50' : 'bg-gray-50'}`}>
-      {/* Avatar */}
-      <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${
-        isUser ? 'bg-blue-500' : 'bg-green-500'
-      }`}>
-        {isUser ? (
-          <User className="w-4 h-4 text-white" />
-        ) : (
-          <Bot className="w-4 h-4 text-white" />
-        )}
-      </div>
+    <div className={`flex gap-3 p-4 ${isUser ? 'justify-end' : 'justify-start'}`}>
+      {!isUser && (
+        /* Avatar del Asistente - Solo a la izquierda */
+        <div className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center bg-black">
+          <span className="text-white text-sm font-bold">&gt;&gt;</span>
+        </div>
+      )}
 
       {/* Message Content */}
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2 mb-2">
-          <span className="font-medium text-sm">
-            {isUser ? 'Usuario' : 'Asistente'}
-          </span>
-          <span className="text-xs text-gray-500">
-            {message.timestamp}
-          </span>
-        </div>
-
-        <div className="prose prose-sm max-w-none">
-          {isUser ? (
-            <p className="text-gray-900">{message.content}</p>
-          ) : (
-            <div className="space-y-4">
+      <div className={`flex flex-col ${isUser ? 'items-end max-w-md' : 'items-start flex-1'}`}>
+        {isUser ? (
+          /* Mensaje del Usuario - Alineado a la derecha */
+          <div className="rounded-lg p-3 mb-1" style={{ backgroundColor: 'rgba(0, 169, 224, 0.15)' }}>
+            <p className="text-gray-900" style={{ fontSize: '16px' }}>{message.content}</p>
+          </div>
+        ) : (
+          /* Mensaje del Asistente - Alineado a la izquierda */
+          <div className="flex-1">
+            <div className="bg-gray-50 rounded-lg p-3 mb-1">
+              <div className="prose prose-sm max-w-none">
+                <div className="space-y-4">
               {/* Direct message content if no parsed response */}
               {!parsedResponse && (
                 <div 
@@ -133,12 +126,28 @@ export function ChatMessage({ message }: ChatMessageProps) {
                   No se detectó contenido para mostrar.
                 </div>
               )}
+                </div>
+              </div>
             </div>
-          )}
+          </div>
+        )}
+        
+        {/* Timestamp */}
+        <div className={`text-xs text-gray-500 ${isUser ? 'text-right' : 'text-left'}`}>
+          {message.timestamp}
         </div>
       </div>
+
+      {isUser && (
+        /* Avatar del Usuario - Solo a la derecha */
+        <div className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center" style={{ backgroundColor: '#0498C8' }}>
+          <User className="w-4 h-4 text-white" />
+        </div>
+      )}
     </div>
   );
 }
+
+
 
 

@@ -1,3 +1,4 @@
+// src/app/page.tsx
 'use client';
 
 import { useState } from 'react';
@@ -13,9 +14,6 @@ export default function Home() {
     setChatKey(prev => prev + 1);
   };
 
-  const handleClearChat = () => {
-    setChatKey(prev => prev + 1);
-  };
 
   const toggleSidebar = () => {
     setSidebarVisible(prev => !prev);
@@ -29,16 +27,13 @@ export default function Home() {
       {/* Main Content */}
       <div className="flex-1 flex overflow-hidden">
         {/* Sidebar */}
-        <div className={`transition-all duration-300 ease-in-out ${
-          sidebarVisible ? 'w-80' : 'w-0'
-        }`}>
-          <div className={`h-full ${sidebarVisible ? 'block' : 'hidden'}`}>
+        {sidebarVisible && (
+          <div className="w-64 transition-all duration-300 ease-in-out">
             <Sidebar 
               onNewChat={handleNewChat}
-              onClearChat={handleClearChat}
             />
           </div>
-        </div>
+        )}
         
         {/* Chat Area */}
         <div className="flex-1 flex flex-col bg-white">
