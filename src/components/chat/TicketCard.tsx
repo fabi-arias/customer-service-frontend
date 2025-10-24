@@ -25,6 +25,7 @@ export function TicketCard({ ticket }: TicketCardProps) {
   const owner = safeText(ticket.owner || ticket.propietario || ticket.owner_name);
   const content = safeText(ticket.content || ticket.descripcion, '');
   const resolution = safeText(ticket.resolution || ticket.resolucion, '');
+  const ticketUrl = safeText(ticket.ticket_url);
 
   // Create title
   const title = `${ticketId} - ${subject.length > 80 ? subject.slice(0, 80) + '...' : subject}`;
@@ -108,7 +109,7 @@ export function TicketCard({ ticket }: TicketCardProps) {
           {/* Content */}
           {content && content !== 'N/A' && (
             <div className="mt-4">
-              <h5 className="font-semibold text-gray-900 mb-2">Descripción</h5>
+              <h5 className="font-semibold text-gray-900 mb-3">Descripción</h5>
               <div className="bg-blue-50 border-l-4 border-blue-400 p-3 rounded-r text-sm text-gray-900">
                 {content}
               </div>
@@ -118,9 +119,26 @@ export function TicketCard({ ticket }: TicketCardProps) {
           {/* Resolution */}
           {resolution && resolution !== 'N/A' && (
             <div className="mt-4">
-              <h5 className="font-semibold text-gray-900 mb-2">Resolución</h5>
+              <h5 className="font-semibold text-gray-900 mb-3">Resolución</h5>
               <div className="bg-green-50 border-l-4 border-green-400 p-3 rounded-r text-sm text-gray-900">
                 {resolution}
+              </div>
+            </div>
+          )}
+
+          {/* Ticket URL (enlace/acción) */}
+          {ticketUrl && ticketUrl !== 'N/A' && (
+            <div className="mt-4">
+              <h5 className="font-semibold text-slate-900 mb-3">Enlace al ticket en HubSpot</h5>
+              <div className="bg-slate-100 border-l-4 border-slate-400 p-3 rounded-r text-sm text-blue-900">
+                <a
+                  href={ticketUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline underline-offset-2 hover:text-blue-700"
+                >
+                  {ticketUrl}
+                </a>
               </div>
             </div>
           )}

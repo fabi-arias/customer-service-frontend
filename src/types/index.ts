@@ -73,6 +73,7 @@ export interface Ticket {
   propietario?: string;
   owner_name?: string;
   case_key?: string;
+  ticket_url?: string;
 }
 
 export interface Contact {

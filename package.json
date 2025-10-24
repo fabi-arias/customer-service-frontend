@@ -15,7 +15,11 @@
     "lucide-react": "^0.545.0",
     "next": "15.5.5",
     "react": "19.1.0",
-    "react-dom": "19.1.0"
+    "react-dom": "19.1.0",
+    "react-vega": "^8.0.0",
+    "vega": "^6.2.0",
+    "vega-embed": "^7.1.0",
+    "vega-lite": "^6.4.1"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
