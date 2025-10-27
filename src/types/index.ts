@@ -17,6 +17,7 @@ export interface ChatResponse {
   response?: string;
   session_id?: string;
   error?: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   trace?: any[];
 }
 
@@ -96,6 +97,8 @@ export interface ParsedResponse {
   tickets: Ticket[];
   contacts: Contact[];
   additionalText: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  chartData?: any; // For storing any chart-related JSON data
 }
 
 

@@ -20,6 +20,7 @@ export const formatDate = (dateStr: string): string => {
   }
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const safeText = (value: any, defaultText: string = 'N/A'): string => {
   if (value === null || value === undefined) return defaultText;
   const s = String(value).trim();
@@ -30,7 +31,9 @@ export const safeText = (value: any, defaultText: string = 'N/A'): string => {
 };
 
 // Extract JSON blocks from text
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const extractFencedJsonBlocks = (text: string): { objects: any[]; spans: [number, number][] } => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const objects: any[] = [];
   const spans: [number, number][] = [];
 
@@ -65,7 +68,9 @@ const extractFencedJsonBlocks = (text: string): { objects: any[]; spans: [number
 };
 
 // Extract balanced JSON objects
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const extractBalancedJsonObjects = (text: string): { objects: any[]; spans: [number, number][] } => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const objects: any[] = [];
   const spans: [number, number][] = [];
   let stack = 0;
@@ -106,7 +111,8 @@ export const parseBedrockResponse = (responseText: string): ParsedResponse => {
       conversational: '',
       tickets: [],
       contacts: [],
-      additionalText: ''
+      additionalText: '',
+      chartData: null
     };
   }
 
@@ -200,11 +206,21 @@ export const parseBedrockResponse = (responseText: string): ParsedResponse => {
     }
   }
 
+  // Check for chart data in the extracted JSON objects
+  let chartData = null;
+  for (const parsedData of objects) {
+    if (parsedData?.chartSpec) {
+      chartData = parsedData;
+      break;
+    }
+  }
+
   return {
     conversational,
     tickets: allTickets,
     contacts: allContacts,
-    additionalText
+    additionalText,
+    chartData
   };
 };
 

@@ -1,10 +1,11 @@
 'use client';
 
 import { ChatMessage as ChatMessageType } from '@/types';
-import { parseBedrockResponse, formatDate, safeText } from '@/lib/responseParser';
+import { parseBedrockResponse } from '@/lib/responseParser';
 import { TicketCard } from './TicketCard';
 import { ContactCard } from './ContactCard';
-import { User, Bot } from 'lucide-react';
+import VisualCard from '@/components/VisualCard';
+import { User } from 'lucide-react';
 
 interface ChatMessageProps {
   message: ChatMessageType;
@@ -94,6 +95,13 @@ export function ChatMessage({ message }: ChatMessageProps) {
                 </div>
               )}
 
+              {/* Chart visualization */}
+              {parsedResponse?.chartData && (
+                <div className="my-3">
+                  <VisualCard payload={parsedResponse.chartData} />
+                </div>
+              )}
+
               {/* Additional text */}
               {parsedResponse?.additionalText && (
                 <div 
@@ -113,7 +121,8 @@ export function ChatMessage({ message }: ChatMessageProps) {
               {!parsedResponse?.conversational && 
                !parsedResponse?.tickets.length && 
                !parsedResponse?.contacts.length && 
-               !parsedResponse?.additionalText && (
+               !parsedResponse?.additionalText && 
+               !parsedResponse?.chartData && (
                 <div 
                   className="italic text-left"
                   style={{

@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { Menu, X } from 'lucide-react';
+import { Menu } from 'lucide-react';
 
 interface HeaderProps {
   onToggleSidebar: () => void;

@@ -45,6 +45,7 @@ cp /Users/fabianaariasrosales/Desktop/customer-service-chat/.env .
 ### 1.4 Ejecutar el backend
 ```bash
 uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+uvicorn main:app --host 0.0.0.0 --port 8000 --workers 2 --access-log
 ```
 
 **✅ Deberías ver:**

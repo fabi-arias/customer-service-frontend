@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import { ChatMessage as ChatMessageType } from '@/types';
 import { chatApi } from '@/lib/api';
 import { ChatMessage } from './ChatMessage';
-import { ArrowUp, Loader2, Bot } from 'lucide-react';
+import { ArrowUp, Loader2 } from 'lucide-react';
 import Image from 'next/image';
 
 export function ChatInterface() {
@@ -21,7 +21,7 @@ export function ChatInterface() {
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages]);
+  }, [messages.length]);
 
   // Welcome message
   useEffect(() => {
@@ -34,6 +34,7 @@ export function ChatInterface() {
       };
       setMessages([welcomeMessage]);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const sendMessage = async () => {
@@ -113,10 +114,7 @@ export function ChatInterface() {
     }
   };
 
-  const clearChat = () => {
-    setMessages([]);
-    setSessionId(null);
-  };
+  // Removed unused clearChat function
 
   return (
     <div className="flex flex-col h-full">
