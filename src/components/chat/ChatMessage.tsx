@@ -4,8 +4,10 @@ import { ChatMessage as ChatMessageType } from '@/types';
 import { parseBedrockResponse } from '@/lib/responseParser';
 import { TicketCard } from './TicketCard';
 import { ContactCard } from './ContactCard';
-import VisualCard from '@/components/VisualCard';
+import { VisualCard } from './VisualCard';
+import { BigNumberCard } from './BigNumberCard';
 import { User } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
 
 interface ChatMessageProps {
   message: ChatMessageType;
@@ -55,15 +57,20 @@ export function ChatMessage({ message }: ChatMessageProps) {
               {/* Conversational text */}
               {parsedResponse?.conversational && (
                 <div 
-                  className="whitespace-pre-wrap text-left"
+                  className="text-left prose prose-sm max-w-none"
                   style={{
                     fontFamily: 'var(--font-inter), sans-serif',
-                    fontSize: '16px',
-                    fontWeight: '400',
                     color: '#000000'
                   }}
                 >
-                  {parsedResponse.conversational}
+                  <ReactMarkdown
+                    components={{
+                      p: ({ children }) => <p className="mb-2">{children}</p>,
+                      strong: ({ children }) => <strong className="font-semibold" style={{ color: '#000000' }}>{children}</strong>,
+                    }}
+                  >
+                    {parsedResponse.conversational}
+                  </ReactMarkdown>
                 </div>
               )}
 
@@ -95,6 +102,15 @@ export function ChatMessage({ message }: ChatMessageProps) {
                 </div>
               )}
 
+              {/* Big Number visualizations - inline cards */}
+              {parsedResponse?.bigNumberData && Array.isArray(parsedResponse.bigNumberData) && parsedResponse.bigNumberData.length > 0 && (
+                <div className="my-2">
+                  {parsedResponse.bigNumberData.map((data, index) => (
+                    <BigNumberCard key={index} payload={data} />
+                  ))}
+                </div>
+              )}
+
               {/* Chart visualizations - multiple charts support */}
               {parsedResponse?.chartData && Array.isArray(parsedResponse.chartData) && parsedResponse.chartData.length > 0 && (
                 <div className="my-3 space-y-4">
@@ -107,15 +123,20 @@ export function ChatMessage({ message }: ChatMessageProps) {
               {/* Additional text */}
               {parsedResponse?.additionalText && (
                 <div 
-                  className="whitespace-pre-wrap text-left"
+                  className="text-left prose prose-sm max-w-none"
                   style={{
                     fontFamily: 'var(--font-inter), sans-serif',
-                    fontSize: '16px',
-                    fontWeight: '400',
                     color: '#000000'
                   }}
                 >
-                  {parsedResponse.additionalText}
+                  <ReactMarkdown
+                    components={{
+                      p: ({ children }) => <p className="mb-2">{children}</p>,
+                      strong: ({ children }) => <strong className="font-semibold" style={{ color: '#023D52' }}>{children}</strong>,
+                    }}
+                  >
+                    {parsedResponse.additionalText}
+                  </ReactMarkdown>
                 </div>
               )}
 

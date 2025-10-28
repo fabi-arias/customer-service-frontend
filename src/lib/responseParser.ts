@@ -112,7 +112,8 @@ export const parseBedrockResponse = (responseText: string): ParsedResponse => {
       tickets: [],
       contacts: [],
       additionalText: '',
-      chartData: undefined
+      chartData: undefined,
+      bigNumberData: undefined
     };
   }
 
@@ -209,9 +210,18 @@ export const parseBedrockResponse = (responseText: string): ParsedResponse => {
   // Extract ALL chart data from the JSON objects
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const chartData: any[] = [];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const bigNumberData: any[] = [];
+  
   for (const parsedData of objects) {
-    if (parsedData?.chartSpec) {
-      chartData.push(parsedData);
+    if (parsedData?.chartSpec || parsedData?.chartType) {
+      // Detect big number visualizations (mark: "text")
+      if (parsedData.chartSpec?.mark?.type === "text") {
+        bigNumberData.push(parsedData);
+      } else {
+        // Include both chartSpec (old) and chartType (new) formats
+        chartData.push(parsedData);
+      }
     }
   }
 
@@ -220,7 +230,8 @@ export const parseBedrockResponse = (responseText: string): ParsedResponse => {
     tickets: allTickets,
     contacts: allContacts,
     additionalText,
-    chartData: chartData.length > 0 ? chartData : undefined
+    chartData: chartData.length > 0 ? chartData : undefined,
+    bigNumberData: bigNumberData.length > 0 ? bigNumberData : undefined
   };
 };
 

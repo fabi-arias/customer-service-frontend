@@ -99,6 +99,8 @@ export interface ParsedResponse {
   additionalText: string;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   chartData?: any[]; // For storing multiple chart-related JSON data
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  bigNumberData?: any[]; // For storing big number visualizations
 }
 
 

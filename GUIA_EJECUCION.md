@@ -340,3 +340,11 @@ Si sigues teniendo problemas:
 2. Asegúrate de que las variables de entorno estén configuradas
 3. Revisa los logs de ambos servicios para errores específicos
 4. Verifica que los puertos no estén ocupados por otros procesos
+
+
+
+
+EXTRAS:
+
+Librería para que acepte las negritas en el texto del agente:
+npm install react-markdown

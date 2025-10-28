@@ -1,13 +1,13 @@
+// src/app/metrics/page.tsx
 "use client";
 import { useEffect, useState } from "react";
-import VisualCard from "@/components/VisualCard";
+import { VisualCard } from "@/components/chat/VisualCard";
 
 export default function MetricsPage() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [charts, setCharts] = useState<any[]>([]);
 
   useEffect(() => {
-    // Example with multiple charts
     setCharts([
       {
         success: true,
