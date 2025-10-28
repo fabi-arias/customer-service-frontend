@@ -112,7 +112,7 @@ export const parseBedrockResponse = (responseText: string): ParsedResponse => {
       tickets: [],
       contacts: [],
       additionalText: '',
-      chartData: null
+      chartData: undefined
     };
   }
 
@@ -206,12 +206,12 @@ export const parseBedrockResponse = (responseText: string): ParsedResponse => {
     }
   }
 
-  // Check for chart data in the extracted JSON objects
-  let chartData = null;
+  // Extract ALL chart data from the JSON objects
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const chartData: any[] = [];
   for (const parsedData of objects) {
     if (parsedData?.chartSpec) {
-      chartData = parsedData;
-      break;
+      chartData.push(parsedData);
     }
   }
 
@@ -220,7 +220,7 @@ export const parseBedrockResponse = (responseText: string): ParsedResponse => {
     tickets: allTickets,
     contacts: allContacts,
     additionalText,
-    chartData
+    chartData: chartData.length > 0 ? chartData : undefined
   };
 };
 

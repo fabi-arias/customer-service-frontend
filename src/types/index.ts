@@ -98,7 +98,7 @@ export interface ParsedResponse {
   contacts: Contact[];
   additionalText: string;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  chartData?: any; // For storing any chart-related JSON data
+  chartData?: any[]; // For storing multiple chart-related JSON data
 }
 
 

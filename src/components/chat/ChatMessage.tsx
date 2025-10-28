@@ -95,10 +95,12 @@ export function ChatMessage({ message }: ChatMessageProps) {
                 </div>
               )}
 
-              {/* Chart visualization */}
-              {parsedResponse?.chartData && (
-                <div className="my-3">
-                  <VisualCard payload={parsedResponse.chartData} />
+              {/* Chart visualizations - multiple charts support */}
+              {parsedResponse?.chartData && Array.isArray(parsedResponse.chartData) && parsedResponse.chartData.length > 0 && (
+                <div className="my-3 space-y-4">
+                  {parsedResponse.chartData.map((chart, index) => (
+                    <VisualCard key={index} payload={chart} />
+                  ))}
                 </div>
               )}
 
@@ -122,7 +124,7 @@ export function ChatMessage({ message }: ChatMessageProps) {
                !parsedResponse?.tickets.length && 
                !parsedResponse?.contacts.length && 
                !parsedResponse?.additionalText && 
-               !parsedResponse?.chartData && (
+               (!parsedResponse?.chartData || (Array.isArray(parsedResponse?.chartData) && parsedResponse.chartData.length === 0)) && (
                 <div 
                   className="italic text-left"
                   style={{
