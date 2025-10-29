@@ -6,10 +6,10 @@ interface LineChartCardProps {
   payload: any;
 }
 
-const AXIS_COLOR = "#132933"; // labelColor de BRAND_CONFIG
-const TITLE_COLOR = "#212121"; // titleColor de BRAND_CONFIG
+const AXIS_COLOR = "#212121"; // labelColor de BRAND_CONFIG
+const TITLE_COLOR = "#000000"; // titleColor de BRAND_CONFIG
 const LINE_COLOR = "#00A9E0"; // line.color de BRAND_CONFIG
-const POINT_COLOR = "#00A9E0"; // point.color de BRAND_CONFIG
+const POINT_COLOR = "#048FBF"; // point.color de BRAND_CONFIG
 
 export function LineChartCard({ payload }: LineChartCardProps) {
   const chartData = payload?.data || [];
@@ -43,7 +43,7 @@ export function LineChartCard({ payload }: LineChartCardProps) {
               value: xTitle, 
               position: 'bottom', 
               offset: -10,
-              style: { fontSize: '13px', fill: TITLE_COLOR, fontWeight: 'normal' }
+              style: { fontSize: '13px', fill: TITLE_COLOR, fontWeight: 'bold' }
             }}
           />
           <YAxis 
@@ -52,8 +52,11 @@ export function LineChartCard({ payload }: LineChartCardProps) {
             label={{ 
               value: yTitle, 
               angle: -90, 
-              position: 'insideLeft',
-              style: { fontSize: '13px', fill: TITLE_COLOR, fontWeight: 'normal' }
+              position: 'insideLeft', // mantiene centrado verticalmente
+              offset: 0,              // deja que dx controle el espacio
+              dx: 10,                // 🔹 aleja el texto de los números
+              dy: 50,                 // 🔹 corrige el centrado vertical (ajusta este valor)
+              style: { fontSize: '13px', fill: TITLE_COLOR, fontWeight: 'bold' }
             }}
           />
           <Tooltip 
@@ -68,7 +71,7 @@ export function LineChartCard({ payload }: LineChartCardProps) {
             labelStyle={{ fontSize: '12px', fontWeight: 'bold', color: '#000' }}
           />
           <Line 
-            type="monotone" 
+            type="linear" 
             dataKey={yField} 
             stroke={LINE_COLOR} 
             strokeWidth={3}

@@ -8,7 +8,7 @@ interface PieChartCardProps {
 
 // Paleta de colores de marca (celestes) - mismo que chartTemplates.ts
 const COLORS = ["#9ECCDB", "#0498C8", "#007DA6", "#025C7A", "#023D52"];
-const LEGEND_LABEL_COLOR = "#132933"; // labelColor de BRAND_CONFIG
+const LEGEND_LABEL_COLOR = "#212121"; // labelColor de BRAND_CONFIG
 const LEGEND_TITLE_COLOR = "#000000"; // titleColor de BRAND_CONFIG
 
 function renderLabel(props: {
