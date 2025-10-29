@@ -4,8 +4,10 @@ import { ChatMessage as ChatMessageType } from '@/types';
 import { parseBedrockResponse } from '@/lib/responseParser';
 import { TicketCard } from './TicketCard';
 import { ContactCard } from './ContactCard';
-import { VisualCard } from './VisualCard';
 import { BigNumberCard } from './BigNumberCard';
+import { PieChartCard } from './PieChartCard';
+import { BarChartCard } from './BarChartCard';
+import { LineChartCard } from './LineChartCard';
 import { User } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 
@@ -114,9 +116,20 @@ export function ChatMessage({ message }: ChatMessageProps) {
               {/* Chart visualizations - multiple charts support */}
               {parsedResponse?.chartData && Array.isArray(parsedResponse.chartData) && parsedResponse.chartData.length > 0 && (
                 <div className="my-3 space-y-4">
-                  {parsedResponse.chartData.map((chart, index) => (
-                    <VisualCard key={index} payload={chart} />
-                  ))}
+                  {parsedResponse.chartData.map((chart, index) => {
+                    // Route to specific Recharts component based on chartType
+                    if (chart?.chartType === "pie") {
+                      return <PieChartCard key={index} payload={chart} />;
+                    }
+                    if (chart?.chartType === "bar") {
+                      return <BarChartCard key={index} payload={chart} />;
+                    }
+                    if (chart?.chartType === "line") {
+                      return <LineChartCard key={index} payload={chart} />;
+                    }
+                    // Fallback (shouldn't happen with new format)
+                    return null;
+                  })}
                 </div>
               )}
 

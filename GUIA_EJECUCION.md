@@ -348,3 +348,12 @@ EXTRAS:
 
 Librería para que acepte las negritas en el texto del agente:
 npm install react-markdown
+
+Libreria para poner felchas en el grafico pastel
+npm install recharts
+
+
+Correccion de errores:
+- Error Internal Server (“ENOENT… _buildManifest.js.tmp… no such file or directory”)
+pkill -f "next dev" 2>/dev/null || true
+rm -rf .next .turbo
