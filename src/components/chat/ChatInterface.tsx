@@ -119,6 +119,7 @@ export function ChatInterface() {
   return (
     <div className="flex flex-col h-full">
       {/* Chat Header */}
+      {/*
       <div className="px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-200">
         <div className="flex flex-col items-start gap-2">
           <Image
@@ -140,6 +141,7 @@ export function ChatInterface() {
           </h1>
         </div>
       </div>
+      */}
 
       {/* Chat Messages */}
       <div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-3 sm:space-y-4">
