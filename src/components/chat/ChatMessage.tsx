@@ -11,6 +11,8 @@ import { LineChartCard } from './LineChartCard';
 import MessageVisual from './MessageVisual';
 import { User } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
+import Image from "next/image";
+import lupa from "@/public/icono-logo.png";
 
 interface ChatMessageProps {
   message: ChatMessageType;
@@ -23,11 +25,23 @@ export function ChatMessage({ message }: ChatMessageProps) {
   return (
     <div className={`flex gap-2 sm:gap-3 p-2 sm:p-4 ${isUser ? 'justify-end' : 'justify-start'}`}>
       {!isUser && (
-        /* Avatar del Asistente - Solo a la izquierda */
-        <div className="flex-shrink-0 w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center bg-black">
-          <span className="text-white text-xs sm:text-sm font-bold">&gt;&gt;</span>
+        /* Avatar del Asistente */
+        <div className="flex-shrink-0">
+          <div className="w-8 h-8 rounded-full bg-white ring-1 ring-gray-300 grid place-items-center overflow-hidden">
+            {/* padding interno para que no quede pegada al borde */}
+            <Image
+              src="/icono-logo.png" 
+              alt="Avatar asistente"
+              width={20}
+              height={20}
+              sizes="32px"
+              className="w-5 h-5 object-contain"
+              priority
+            />
+          </div>
         </div>
       )}
+
 
       {/* Message Content */}
       <div className={`flex flex-col ${isUser ? 'items-end max-w-[85%] sm:max-w-md' : 'items-start flex-1'}`}>
