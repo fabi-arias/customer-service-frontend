@@ -8,6 +8,7 @@ import { BigNumberCard } from './BigNumberCard';
 import { PieChartCard } from './PieChartCard';
 import { BarChartCard } from './BarChartCard';
 import { LineChartCard } from './LineChartCard';
+import MessageVisual from './MessageVisual';
 import { User } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 
@@ -37,7 +38,7 @@ export function ChatMessage({ message }: ChatMessageProps) {
           </div>
         ) : (
           /* Mensaje del Asistente - Alineado a la izquierda */
-          <div className="flex-1 min-w-0">
+          <div className="flex-1 min-w-0 max-w-[92vw] sm:max-w-[42rem] md:max-w-[56rem] lg:max-w-[64rem]">
             <div className="bg-gray-50 rounded-lg p-2 sm:p-3 mb-1">
               <div className="prose prose-sm max-w-none">
                 <div className="space-y-3 sm:space-y-4">
@@ -108,7 +109,9 @@ export function ChatMessage({ message }: ChatMessageProps) {
               {parsedResponse?.bigNumberData && Array.isArray(parsedResponse.bigNumberData) && parsedResponse.bigNumberData.length > 0 && (
                 <div className="my-2 space-y-2 sm:space-y-0">
                   {parsedResponse.bigNumberData.map((data, index) => (
-                    <BigNumberCard key={index} payload={data} />
+                    <MessageVisual key={index}>
+                      <BigNumberCard payload={data} />
+                    </MessageVisual>
                   ))}
                 </div>
               )}
@@ -119,13 +122,25 @@ export function ChatMessage({ message }: ChatMessageProps) {
                   {parsedResponse.chartData.map((chart, index) => {
                     // Route to specific Recharts component based on chartType
                     if (chart?.chartType === "pie") {
-                      return <PieChartCard key={index} payload={chart} />;
+                      return (
+                        <MessageVisual key={index}>
+                          <PieChartCard payload={chart} />
+                        </MessageVisual>
+                      );
                     }
                     if (chart?.chartType === "bar") {
-                      return <BarChartCard key={index} payload={chart} />;
+                      return (
+                        <MessageVisual key={index}>
+                          <BarChartCard payload={chart} />
+                        </MessageVisual>
+                      );
                     }
                     if (chart?.chartType === "line") {
-                      return <LineChartCard key={index} payload={chart} />;
+                      return (
+                        <MessageVisual key={index}>
+                          <LineChartCard payload={chart} />
+                        </MessageVisual>
+                      );
                     }
                     // Fallback (shouldn't happen with new format)
                     return null;

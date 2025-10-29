@@ -28,9 +28,9 @@ export function LineChartCard({ payload }: LineChartCardProps) {
   const dynamicWidth = Math.min(900, Math.max(400, 30 + chartData.length * 60));
 
   return (
-    <div className="rounded-2xl border p-3 sm:p-4 shadow-sm bg-white mb-4 w-full max-w-full overflow-x-auto">
+    <div className="rounded-2xl border p-3 sm:p-4 shadow-sm bg-white mb-4">
       <h3 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4">{title}</h3>
-      <ResponsiveContainer width="100%" height={250} className="sm:h-[300px]">
+      <ResponsiveContainer width={dynamicWidth + 260} height={250} className="sm:h-[300px]">
         <LineChart data={chartData}>
           <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
           <XAxis 

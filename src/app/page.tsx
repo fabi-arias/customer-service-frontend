@@ -41,10 +41,10 @@ export default function Home() {
       
       {/* Main Content */}
       <div className="flex-1 flex overflow-hidden relative">
-        {/* Sidebar Overlay for mobile */}
-        {sidebarVisible && (
+        {/* Overlay for mobile - covers entire screen */}
+        {sidebarVisible && isMobile && (
           <div 
-            className="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden"
+            className="fixed inset-0 bg-white bg-opacity-50 z-30"
             onClick={toggleSidebar}
           />
         )}
@@ -63,8 +63,8 @@ export default function Home() {
           </div>
         )}
         
-        {/* Chat Area */}
-        <div className="flex-1 flex flex-col bg-white min-w-0">
+        {/* Chat Area - always visible with white background, above overlay */}
+        <div className="flex-1 flex flex-col bg-white min-w-0 relative z-40 md:z-0">
           <ChatInterface key={chatKey} />
         </div>
       </div>

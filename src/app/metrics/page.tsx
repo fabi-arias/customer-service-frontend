@@ -2,6 +2,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { VisualCard } from "@/components/chat/VisualCard";
+import MessageVisual from "@/components/chat/MessageVisual";
 
 export default function MetricsPage() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -66,7 +67,11 @@ export default function MetricsPage() {
       <h1 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4">Métricas - Múltiples Gráficos</h1>
       <div className="space-y-3 sm:space-y-4">
         {charts.length > 0 ? (
-          charts.map((chart, index) => <VisualCard key={index} payload={chart} />)
+          charts.map((chart, index) => (
+            <MessageVisual key={index}>
+              <VisualCard payload={chart} />
+            </MessageVisual>
+          ))
         ) : (
           <p className="text-sm sm:text-base">Cargando…</p>
         )}
