@@ -20,34 +20,34 @@ export function ChatMessage({ message }: ChatMessageProps) {
   const parsedResponse = !isUser ? parseBedrockResponse(message.content) : null;
 
   return (
-    <div className={`flex gap-3 p-4 ${isUser ? 'justify-end' : 'justify-start'}`}>
+    <div className={`flex gap-2 sm:gap-3 p-2 sm:p-4 ${isUser ? 'justify-end' : 'justify-start'}`}>
       {!isUser && (
         /* Avatar del Asistente - Solo a la izquierda */
-        <div className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center bg-black">
-          <span className="text-white text-sm font-bold">&gt;&gt;</span>
+        <div className="flex-shrink-0 w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center bg-black">
+          <span className="text-white text-xs sm:text-sm font-bold">&gt;&gt;</span>
         </div>
       )}
 
       {/* Message Content */}
-      <div className={`flex flex-col ${isUser ? 'items-end max-w-md' : 'items-start flex-1'}`}>
+      <div className={`flex flex-col ${isUser ? 'items-end max-w-[85%] sm:max-w-md' : 'items-start flex-1'}`}>
         {isUser ? (
           /* Mensaje del Usuario - Alineado a la derecha */
-          <div className="rounded-lg p-3 mb-1" style={{ backgroundColor: 'rgba(0, 169, 224, 0.15)' }}>
-            <p className="text-gray-900" style={{ fontSize: '16px' }}>{message.content}</p>
+          <div className="rounded-lg p-2 sm:p-3 mb-1" style={{ backgroundColor: 'rgba(0, 169, 224, 0.15)' }}>
+            <p className="text-gray-900 text-sm sm:text-base break-words">{message.content}</p>
           </div>
         ) : (
           /* Mensaje del Asistente - Alineado a la izquierda */
-          <div className="flex-1">
-            <div className="bg-gray-50 rounded-lg p-3 mb-1">
+          <div className="flex-1 min-w-0">
+            <div className="bg-gray-50 rounded-lg p-2 sm:p-3 mb-1">
               <div className="prose prose-sm max-w-none">
-                <div className="space-y-4">
+                <div className="space-y-3 sm:space-y-4">
               {/* Direct message content if no parsed response */}
               {!parsedResponse && (
                 <div 
-                  className="whitespace-pre-wrap text-left"
+                  className="whitespace-pre-wrap text-left break-words"
                   style={{
                     fontFamily: 'var(--font-inter), sans-serif',
-                    fontSize: '16px',
+                    fontSize: '14px',
                     fontWeight: '400',
                     color: '#000000'
                   }}
@@ -79,10 +79,10 @@ export function ChatMessage({ message }: ChatMessageProps) {
               {/* Tickets */}
               {parsedResponse?.tickets && parsedResponse.tickets.length > 0 && (
                 <div>
-                  <h4 className="font-semibold text-gray-900 mb-3">
+                  <h4 className="font-semibold text-gray-900 mb-2 sm:mb-3 text-sm sm:text-base">
                     Tickets Encontrados ({parsedResponse.tickets.length})
                   </h4>
-                  <div className="space-y-3">
+                  <div className="space-y-2 sm:space-y-3">
                     {parsedResponse.tickets.map((ticket, index) => (
                       <TicketCard key={index} ticket={ticket} />
                     ))}
@@ -93,10 +93,10 @@ export function ChatMessage({ message }: ChatMessageProps) {
               {/* Contacts */}
               {parsedResponse?.contacts && parsedResponse.contacts.length > 0 && (
                 <div>
-                  <h4 className="font-semibold text-gray-900 mb-3">
+                  <h4 className="font-semibold text-gray-900 mb-2 sm:mb-3 text-sm sm:text-base">
                     Contactos Encontrados ({parsedResponse.contacts.length})
                   </h4>
-                  <div className="space-y-3">
+                  <div className="space-y-2 sm:space-y-3">
                     {parsedResponse.contacts.map((contact, index) => (
                       <ContactCard key={index} contact={contact} />
                     ))}
@@ -106,7 +106,7 @@ export function ChatMessage({ message }: ChatMessageProps) {
 
               {/* Big Number visualizations - inline cards */}
               {parsedResponse?.bigNumberData && Array.isArray(parsedResponse.bigNumberData) && parsedResponse.bigNumberData.length > 0 && (
-                <div className="my-2">
+                <div className="my-2 space-y-2 sm:space-y-0">
                   {parsedResponse.bigNumberData.map((data, index) => (
                     <BigNumberCard key={index} payload={data} />
                   ))}
@@ -115,7 +115,7 @@ export function ChatMessage({ message }: ChatMessageProps) {
 
               {/* Chart visualizations - multiple charts support */}
               {parsedResponse?.chartData && Array.isArray(parsedResponse.chartData) && parsedResponse.chartData.length > 0 && (
-                <div className="my-3 space-y-4">
+                <div className="my-3 space-y-3 sm:space-y-4">
                   {parsedResponse.chartData.map((chart, index) => {
                     // Route to specific Recharts component based on chartType
                     if (chart?.chartType === "pie") {
@@ -160,10 +160,9 @@ export function ChatMessage({ message }: ChatMessageProps) {
                !parsedResponse?.additionalText && 
                (!parsedResponse?.chartData || (Array.isArray(parsedResponse?.chartData) && parsedResponse.chartData.length === 0)) && (
                 <div 
-                  className="italic text-left"
+                  className="italic text-left text-sm sm:text-base"
                   style={{
                     fontFamily: 'var(--font-inter), sans-serif',
-                    fontSize: '16px',
                     fontWeight: '400',
                     color: '#000000'
                   }}
@@ -185,8 +184,8 @@ export function ChatMessage({ message }: ChatMessageProps) {
 
       {isUser && (
         /* Avatar del Usuario - Solo a la derecha */
-        <div className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center" style={{ backgroundColor: '#0498C8' }}>
-          <User className="w-4 h-4 text-white" />
+        <div className="flex-shrink-0 w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center" style={{ backgroundColor: '#0498C8' }}>
+          <User className="w-3 h-3 sm:w-4 sm:h-4 text-white" />
         </div>
       )}
     </div>

@@ -47,15 +47,15 @@ export function PieChartCard({ payload }: PieChartCardProps) {
   const title = payload?.metric || "Distribución";
 
   return (
-    <div className="rounded-2xl border p-4 shadow-sm bg-white mb-4">
-      <h3 className="text-lg font-semibold mb-4">{title}</h3>
-      <ResponsiveContainer width="100%" height={280}>
+    <div className="rounded-2xl border p-3 sm:p-4 shadow-sm bg-white mb-4 w-full max-w-full overflow-x-auto">
+      <h3 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4">{title}</h3>
+      <ResponsiveContainer width="100%" height={220} className="sm:h-[280px]">
         <PieChart>
           <Pie
           data={chartData}
           dataKey="value"
           nameKey="name"
-          outerRadius={80}
+          outerRadius="70%"
           paddingAngle={1}
           labelLine={true}
           label={renderLabel}

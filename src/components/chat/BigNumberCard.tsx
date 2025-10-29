@@ -34,13 +34,13 @@ export function BigNumberCard({ payload }: BigNumberCardProps) {
     : number.toFixed(2); // Decimal for hours
 
   return (
-    <div className="inline-block my-2">
-    <div className="border border-gray-300 rounded-lg bg-white p-4 shadow-sm w-56 h-36 flex flex-col">
-        <div className="text-sm text-black font-bold mb-2 text-center">{metric}</div>
+    <div className="my-2 w-full sm:w-auto sm:inline-block">
+    <div className="border border-gray-300 rounded-lg bg-white p-3 sm:p-4 shadow-sm w-full sm:w-56 h-32 sm:h-36 flex flex-col">
+        <div className="text-xs sm:text-sm text-black font-bold mb-2 text-center">{metric}</div>
 
         {/* Centro elástico */}
         <div className="flex-1 grid place-items-center">
-        <div className="text-4xl font-bold text-[#00A9E0] leading-tight text-center">
+        <div className="text-2xl sm:text-3xl md:text-4xl font-bold text-[#00A9E0] leading-tight text-center">
             {formattedNumber}
         </div>
         </div>

@@ -119,20 +119,19 @@ export function ChatInterface() {
   return (
     <div className="flex flex-col h-full">
       {/* Chat Header */}
-      <div className="px-6 py-4 border-b border-gray-200">
+      <div className="px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-200">
         <div className="flex flex-col items-start gap-2">
           <Image
             src="/logo-spot3x.png"
             alt="Logo SPOT"
             width={60}
             height={60}
-            className="h-12 w-auto"
+            className="h-8 sm:h-12 w-auto"
           />
           <h1 
-            className="font-semibold"
+            className="font-semibold text-lg sm:text-xl md:text-[22px]"
             style={{ 
               fontFamily: 'var(--font-figtree), sans-serif',
-              fontSize: '22px',
               letterSpacing: '-2%',
               color: '#9F9F9F'
             }}
@@ -143,22 +142,22 @@ export function ChatInterface() {
       </div>
 
       {/* Chat Messages */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      <div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-3 sm:space-y-4">
         {messages.map((message) => (
           <ChatMessage key={message.id} message={message} />
         ))}
         
         {/* Loading indicator */}
         {isLoading && (
-          <div className="flex gap-3 p-4">
-            <div className="flex-shrink-0 w-8 h-8 rounded-full bg-black flex items-center justify-center">
-              <span className="text-white text-sm font-bold">&gt;&gt;</span>
+          <div className="flex gap-2 sm:gap-3 p-2 sm:p-4">
+            <div className="flex-shrink-0 w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-black flex items-center justify-center">
+              <span className="text-white text-xs sm:text-sm font-bold">&gt;&gt;</span>
             </div>
             <div className="flex-1">
-              <div className="bg-gray-50 rounded-lg p-3 mb-1">
+              <div className="bg-gray-50 rounded-lg p-2 sm:p-3 mb-1">
                 <div className="flex items-center gap-2">
-                  <Loader2 className="w-4 h-4 animate-spin text-gray-500" />
-                  <span className="text-gray-500 italic">Pensando...</span>
+                  <Loader2 className="w-3 h-3 sm:w-4 sm:h-4 animate-spin text-gray-500" />
+                  <span className="text-gray-500 italic text-sm sm:text-base">Pensando...</span>
                 </div>
               </div>
             </div>
@@ -169,15 +168,15 @@ export function ChatInterface() {
       </div>
 
       {/* Chat Input */}
-      <div className="border-t border-gray-200 p-4">
-        <div className="flex items-center gap-3">
-          <div className="flex-1 bg-gray-100 rounded-full px-4 py-3">
+      <div className="border-t border-gray-200 p-3 sm:p-4">
+        <div className="flex items-center gap-2 sm:gap-3">
+          <div className="flex-1 bg-gray-100 rounded-full px-3 sm:px-4 py-2 sm:py-3">
             <textarea
               value={inputMessage}
               onChange={(e) => setInputMessage(e.target.value)}
               onKeyPress={handleKeyPress}
               placeholder="Escribe tu mensaje aquí..."
-              className="w-full resize-none bg-transparent border-none outline-none text-gray-900 placeholder-gray-500"
+              className="w-full resize-none bg-transparent border-none outline-none text-gray-900 placeholder-gray-500 text-sm sm:text-base"
               rows={1}
               disabled={isLoading}
             />
@@ -185,7 +184,7 @@ export function ChatInterface() {
           <button
             onClick={sendMessage}
             disabled={!inputMessage.trim() || isLoading}
-            className="w-10 h-10 text-white rounded-full disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center transition-colors"
+            className="w-9 h-9 sm:w-10 sm:h-10 text-white rounded-full disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center transition-colors flex-shrink-0"
             style={{
               backgroundColor: '#0498C8'
             }}
@@ -201,9 +200,9 @@ export function ChatInterface() {
             }}
           >
             {isLoading ? (
-              <Loader2 className="w-5 h-5 animate-spin" />
+              <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" />
             ) : (
-              <ArrowUp className="w-5 h-5" />
+              <ArrowUp className="w-4 h-4 sm:w-5 sm:h-5" />
             )}
           </button>
         </div>

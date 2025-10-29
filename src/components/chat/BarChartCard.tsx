@@ -108,12 +108,11 @@ export function BarChartCard({ payload }: BarChartCardProps) {
 
   return (
     <div
-      className="inline-block rounded-2xl border p-4 shadow-sm bg-white mb-4"
-      style={{ width: `${dynamicWidth + 260}px` }}
+      className="rounded-2xl border p-3 sm:p-4 shadow-sm bg-white mb-4 w-full max-w-full overflow-x-auto"
     >
-      <h3 className="text-lg font-semibold mb-4">{title}</h3>
+      <h3 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4">{title}</h3>
 
-      <ResponsiveContainer width="100%" height={dynamicHeight}>
+      <ResponsiveContainer width="100%" height={Math.max(200, Math.min(dynamicHeight, 400))} minHeight={200}>
         <BarChart
           data={sortedData}
           layout="vertical"

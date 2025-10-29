@@ -61,13 +61,13 @@ export function Sidebar({ onNewChat }: SidebarProps) {
   };
 
   return (
-    <div className="bg-gray-50 border-r border-gray-200 flex flex-col h-full">
+    <div className="bg-gray-50 border-r border-gray-200 flex flex-col h-full overflow-y-auto">
 
       {/* Navigation */}
-      <div className="p-4 space-y-2">
+      <div className="p-3 sm:p-4 space-y-2">
         <button
           onClick={onNewChat}
-          className="w-full flex items-center gap-3 px-3 py-2 text-left text-white rounded-lg transition-colors"
+          className="w-full flex items-center gap-2 sm:gap-3 px-3 py-2 text-left text-white rounded-lg transition-colors text-sm sm:text-base"
           style={{
             backgroundColor: '#00A9E0',
             boxShadow: '0px 4px 4px rgba(0, 0, 0, 0.25)'
@@ -81,32 +81,32 @@ export function Sidebar({ onNewChat }: SidebarProps) {
             e.currentTarget.style.color = '#ffffff';
           }}
         >
-          <Plus className="w-5 h-5" />
-          Iniciar nuevo chat
+          <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
+          <span className="truncate">Iniciar nuevo chat</span>
         </button>
         
         <button
           disabled
-          className="w-full flex items-center gap-3 px-3 py-2 text-left text-white cursor-not-allowed rounded-lg"
+          className="w-full flex items-center gap-2 sm:gap-3 px-3 py-2 text-left text-white cursor-not-allowed rounded-lg text-sm sm:text-base"
           style={{
             backgroundColor: '#00A9E0',
             boxShadow: '0px 4px 4px rgba(0, 0, 0, 0.25)'
           }}
         >
-          <MessageSquare className="w-5 h-5" />
-          Conversación actual
+          <MessageSquare className="w-4 h-4 sm:w-5 sm:h-5" />
+          <span className="truncate">Conversación actual</span>
         </button>
       </div>
 
       {/* Agent Information */}
-      <div className="px-4">
+      <div className="px-3 sm:px-4">
         <button
           onClick={handleAgentInfoToggle}
-          className="w-full flex items-center justify-between px-3 py-2 text-left text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+          className="w-full flex items-center justify-between px-3 py-2 text-left text-gray-700 hover:bg-gray-100 rounded-lg transition-colors text-sm sm:text-base"
         >
-          <div className="flex items-center gap-3">
-            <Bot className="w-5 h-5" />
-            Información del Agente
+          <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
+            <Bot className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
+            <span className="truncate">Información del Agente</span>
           </div>
           {isAgentInfoExpanded ? (
             <ChevronDown className="w-4 h-4" />
@@ -116,9 +116,9 @@ export function Sidebar({ onNewChat }: SidebarProps) {
         </button>
 
         {isAgentInfoExpanded && (
-          <div className="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+          <div className="mt-2 p-2 sm:p-3 bg-blue-50 border border-blue-200 rounded-lg">
             {agentInfo ? (
-              <div className="space-y-2 text-sm">
+              <div className="space-y-2 text-xs sm:text-sm">
                 <div>
                   <span className="font-medium text-gray-700">Agente ID:</span>
                   <span className="ml-2 text-gray-900">{agentInfo.agent_id}</span>
@@ -139,7 +139,7 @@ export function Sidebar({ onNewChat }: SidebarProps) {
             <button
               onClick={testConnection}
               disabled={isTestingConnection}
-              className="mt-3 w-full flex items-center justify-center gap-2 px-3 py-2 bg-blue-500 text-white text-sm rounded hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="mt-3 w-full flex items-center justify-center gap-2 px-3 py-2 bg-blue-500 text-white text-xs sm:text-sm rounded hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isTestingConnection ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
@@ -178,14 +178,14 @@ export function Sidebar({ onNewChat }: SidebarProps) {
 
 
       {/* User Profile */}
-      <div className="mt-auto p-4">
-        <div className="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-lg">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ backgroundColor: '#D9F2FA' }}>
-              <User className="w-5 h-5" style={{ color: '#00A9E0' }} />
+      <div className="mt-auto p-3 sm:p-4">
+        <div className="flex items-center justify-between p-2 sm:p-3 bg-white border border-gray-200 rounded-lg">
+          <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#D9F2FA' }}>
+              <User className="w-4 h-4 sm:w-5 sm:h-5" style={{ color: '#00A9E0' }} />
             </div>
-            <div>
-              <div className="font-medium text-gray-900">Usuario</div>
+            <div className="min-w-0 flex-1">
+              <div className="font-medium text-gray-900 text-sm sm:text-base truncate">Usuario</div>
             </div>
           </div>
           <button className="p-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">

@@ -10,9 +10,9 @@ interface HeaderProps {
 export function Header({ onToggleSidebar }: HeaderProps) {
   return (
     <div className="bg-white border-b" style={{ borderColor: '#E6E6E6', borderWidth: '1px' }}>
-      <div className="px-6 py-4">
+      <div className="px-4 sm:px-6 py-3 sm:py-4">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 sm:gap-4">
             <button
               onClick={onToggleSidebar}
               className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
@@ -25,7 +25,7 @@ export function Header({ onToggleSidebar }: HeaderProps) {
               alt="Logo Muscle"
               width={120}
               height={40}
-              className="h-8 w-auto"
+              className="h-6 sm:h-8 w-auto"
             />
           </div>
         </div>
