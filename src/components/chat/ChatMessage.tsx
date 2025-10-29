@@ -213,7 +213,7 @@ export function ChatMessage({ message }: ChatMessageProps) {
 
       {isUser && (
         /* Avatar del Usuario - Solo a la derecha */
-        <div className="flex-shrink-0 w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center" style={{ backgroundColor: '#0498C8' }}>
+        <div className="flex-shrink-0 w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center" style={{ backgroundColor: '#00A9E0' }}>
           <User className="w-3 h-3 sm:w-4 sm:h-4 text-white" />
         </div>
       )}

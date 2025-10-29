@@ -152,20 +152,35 @@ export function ChatInterface() {
         {/* Loading indicator */}
         {isLoading && (
           <div className="flex gap-2 sm:gap-3 p-2 sm:p-4">
-            <div className="flex-shrink-0 w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-black flex items-center justify-center">
-              <span className="text-white text-xs sm:text-sm font-bold">&gt;&gt;</span>
+            <div className="flex-shrink-0">
+              <div className="relative w-8 h-8">
+                {/* aro giratorio opcional */}
+                <span className="absolute inset-0 rounded-full border-2 border-gray-200 border-t-[#00A9E0] animate-spin" />
+                {/* avatar */}
+                <div className="w-full h-full rounded-full bg-white ring-1 ring-gray-300 grid place-items-center overflow-hidden">
+                  <Image
+                    src="/icono-logo.png"    // en /public
+                    alt="Avatar asistente"
+                    width={20}
+                    height={20}
+                    sizes="32px"
+                    className="w-5 h-5 object-contain"
+                    priority
+                  />
+                </div>
+              </div>
             </div>
+
             <div className="flex-1">
               <div className="bg-gray-50 rounded-lg p-2 sm:p-3 mb-1">
                 <div className="flex items-center gap-2">
-                  <Loader2 className="w-3 h-3 sm:w-4 sm:h-4 animate-spin text-gray-500" />
                   <span className="text-gray-500 italic text-sm sm:text-base">Pensando...</span>
                 </div>
               </div>
             </div>
           </div>
         )}
-        
+
         <div ref={messagesEndRef} />
       </div>
 
