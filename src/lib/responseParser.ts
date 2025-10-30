@@ -215,10 +215,19 @@ export const parseBedrockResponse = (responseText: string): ParsedResponse => {
   
   for (const parsedData of objects) {
     if (parsedData?.chartSpec || parsedData?.chartType) {
-      // Detect big number visualizations (mark: "text")
-      if (parsedData.chartSpec?.mark?.type === "text") {
+      // Detect big number visualizations:
+      // 1. New format: chartType === "bigNumber"
+      // 2. Old format: chartSpec?.mark?.type === "text"
+      // 3. Also check for explicit big number fields (total_closed, avg_hours_business)
+      if (
+        parsedData.chartType === "bigNumber" ||
+        parsedData.chartSpec?.mark?.type === "text" ||
+        (parsedData.total_closed !== undefined && !parsedData.data && !parsedData.chartType) ||
+        (parsedData.avg_hours_business !== undefined && !parsedData.data && !parsedData.chartType)
+      ) {
         bigNumberData.push(parsedData);
       } else {
+        // Regular charts: bar, line, pie, etc.
         // Include both chartSpec (old) and chartType (new) formats
         chartData.push(parsedData);
       }

@@ -156,6 +156,16 @@ export function ChatMessage({ message }: ChatMessageProps) {
                         </MessageVisual>
                       );
                     }
+                    // Fallback: if it's a bigNumber that somehow ended up in chartData
+                    if (chart?.chartType === "bigNumber" || 
+                        (chart?.total_closed !== undefined && !chart?.data) ||
+                        (chart?.avg_hours_business !== undefined && !chart?.data)) {
+                      return (
+                        <MessageVisual key={index}>
+                          <BigNumberCard payload={chart} />
+                        </MessageVisual>
+                      );
+                    }
                     // Fallback (shouldn't happen with new format)
                     return null;
                   })}
@@ -187,7 +197,8 @@ export function ChatMessage({ message }: ChatMessageProps) {
                !parsedResponse?.tickets.length && 
                !parsedResponse?.contacts.length && 
                !parsedResponse?.additionalText && 
-               (!parsedResponse?.chartData || (Array.isArray(parsedResponse?.chartData) && parsedResponse.chartData.length === 0)) && (
+               (!parsedResponse?.chartData || (Array.isArray(parsedResponse?.chartData) && parsedResponse.chartData.length === 0)) &&
+               (!parsedResponse?.bigNumberData || (Array.isArray(parsedResponse?.bigNumberData) && parsedResponse.bigNumberData.length === 0)) && (
                 <div 
                   className="italic text-left text-sm sm:text-base"
                   style={{
