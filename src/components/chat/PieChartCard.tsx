@@ -49,7 +49,7 @@ export function PieChartCard({ payload }: PieChartCardProps) {
   return (
     <div className="rounded-2xl border p-3 sm:p-4 shadow-sm bg-white mb-4">
       <h3 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4">{title}</h3>
-      <ResponsiveContainer width={280} height={220} className="sm:h-[280px]">
+      <ResponsiveContainer width={425} height={220} className="sm:h-[280px]">
         <PieChart>
           <Pie
           data={chartData}
@@ -76,7 +76,7 @@ export function PieChartCard({ payload }: PieChartCardProps) {
             color: LEGEND_TITLE_COLOR // titleColor de BRAND_CONFIG
           }}
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          formatter={(value: any) => <span style={{ fontSize: '14px', fontWeight: 'bold', color: LEGEND_LABEL_COLOR }}>{value}</span>}
+          formatter={(value: any) => <span style={{ fontSize: '14px', fontWeight: 'normal', color: LEGEND_LABEL_COLOR }}>{value}</span>}
         />
         <Tooltip 
           // eslint-disable-next-line @typescript-eslint/no-explicit-any

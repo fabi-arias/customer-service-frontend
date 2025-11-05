@@ -13,6 +13,7 @@ import { User } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import Image from "next/image";
 import lupa from "@/public/icono-logo.png";
+import type { ReactNode } from 'react';
 
 interface ChatMessageProps {
   message: ChatMessageType;
@@ -21,6 +22,28 @@ interface ChatMessageProps {
 export function ChatMessage({ message }: ChatMessageProps) {
   const isUser = message.role === 'user';
   const parsedResponse = !isUser ? parseBedrockResponse(message.content) : null;
+
+  // Reusable markdown components for consistent formatting
+  const markdownComponents = {
+    p: ({ children }: { children?: ReactNode }) => <p className="mb-2">{children}</p>,
+    strong: ({ children }: { children?: ReactNode }) => <strong className="font-semibold" style={{ color: '#000000' }}>{children}</strong>,
+    ul: ({ children }: { children?: ReactNode }) => (
+      <ul className="mb-2 space-y-1" style={{ listStyleType: 'disc', paddingLeft: '1.5rem' }}>
+        {children}
+      </ul>
+    ),
+    ol: ({ children }: { children?: ReactNode }) => (
+      <ol className="mb-2 space-y-1" style={{ listStyleType: 'decimal', paddingLeft: '1.5rem', listStylePosition: 'outside' }}>
+        {children}
+      </ol>
+    ),
+    li: ({ children }: { children?: ReactNode }) => (
+      <li className="mb-1" style={{ display: 'list-item', paddingLeft: '0.25rem' }}>
+        {children}
+      </li>
+    ),
+    br: () => <br />,
+  };
 
   return (
     <div className={`flex gap-2 sm:gap-3 p-2 sm:p-4 ${isUser ? 'justify-end' : 'justify-start'}`}>
@@ -71,8 +94,69 @@ export function ChatMessage({ message }: ChatMessageProps) {
                 </div>
               )}
 
-              {/* Conversational text */}
-              {parsedResponse?.conversational && (
+              {/* Use ordered elements if available (preserves original order) */}
+              {parsedResponse?.orderedElements && parsedResponse.orderedElements.length > 0 ? (
+                parsedResponse.orderedElements.map((element, index) => {
+                  if (element.type === 'text') {
+                    return (
+                      <div 
+                        key={index}
+                        className="text-left prose prose-sm max-w-none"
+                        style={{
+                          fontFamily: 'var(--font-inter), sans-serif',
+                          color: '#000000'
+                        }}
+                      >
+                        <ReactMarkdown
+                          components={markdownComponents}
+                        >
+                          {element.content}
+                        </ReactMarkdown>
+                      </div>
+                    );
+                  } else if (element.type === 'bigNumber') {
+                    return (
+                      <div key={index} className="my-2">
+                        <MessageVisual>
+                          <BigNumberCard payload={element.data} />
+                        </MessageVisual>
+                      </div>
+                    );
+                  } else if (element.type === 'chart') {
+                    const chart = element.data;
+                    return (
+                      <div key={index} className="my-3">
+                        <MessageVisual>
+                          {chart?.chartType === "pie" && <PieChartCard payload={chart} />}
+                          {chart?.chartType === "bar" && <BarChartCard payload={chart} />}
+                          {chart?.chartType === "line" && <LineChartCard payload={chart} />}
+                          {(chart?.chartType === "bigNumber" || 
+                            (chart?.total_closed !== undefined && !chart?.data) ||
+                            (chart?.avg_hours_business !== undefined && !chart?.data)) && 
+                            <BigNumberCard payload={chart} />}
+                        </MessageVisual>
+                      </div>
+                    );
+                  } else if (element.type === 'ticket') {
+                    return (
+                      <div key={index} className="my-2">
+                        <TicketCard ticket={element.data} />
+                      </div>
+                    );
+                  } else if (element.type === 'contact') {
+                    return (
+                      <div key={index} className="my-2">
+                        <ContactCard contact={element.data} />
+                      </div>
+                    );
+                  }
+                  return null;
+                })
+              ) : (
+                /* Fallback: Old format (for backwards compatibility) */
+                <>
+                  {/* Conversational text */}
+                  {parsedResponse?.conversational && (
                 <div 
                   className="text-left prose prose-sm max-w-none"
                   style={{
@@ -81,10 +165,7 @@ export function ChatMessage({ message }: ChatMessageProps) {
                   }}
                 >
                   <ReactMarkdown
-                    components={{
-                      p: ({ children }) => <p className="mb-2">{children}</p>,
-                      strong: ({ children }) => <strong className="font-semibold" style={{ color: '#000000' }}>{children}</strong>,
-                    }}
+                    components={markdownComponents}
                   >
                     {parsedResponse.conversational}
                   </ReactMarkdown>
@@ -172,28 +253,28 @@ export function ChatMessage({ message }: ChatMessageProps) {
                 </div>
               )}
 
-              {/* Additional text */}
-              {parsedResponse?.additionalText && (
-                <div 
-                  className="text-left prose prose-sm max-w-none"
-                  style={{
-                    fontFamily: 'var(--font-inter), sans-serif',
-                    color: '#000000'
-                  }}
-                >
-                  <ReactMarkdown
-                    components={{
-                      p: ({ children }) => <p className="mb-2">{children}</p>,
-                      strong: ({ children }) => <strong className="font-semibold" style={{ color: '#023D52' }}>{children}</strong>,
-                    }}
-                  >
-                    {parsedResponse.additionalText}
-                  </ReactMarkdown>
-                </div>
+                  {/* Additional text */}
+                  {parsedResponse?.additionalText && (
+                    <div 
+                      className="text-left prose prose-sm max-w-none"
+                      style={{
+                        fontFamily: 'var(--font-inter), sans-serif',
+                        color: '#000000'
+                      }}
+                    >
+                      <ReactMarkdown
+                        components={markdownComponents}
+                      >
+                        {parsedResponse.additionalText}
+                      </ReactMarkdown>
+                    </div>
+                  )}
+                </>
               )}
 
               {/* Fallback if no content */}
-              {!parsedResponse?.conversational && 
+              {!parsedResponse?.orderedElements && 
+               !parsedResponse?.conversational && 
                !parsedResponse?.tickets.length && 
                !parsedResponse?.contacts.length && 
                !parsedResponse?.additionalText && 
