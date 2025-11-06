@@ -1,6 +1,8 @@
 // src/app/metrics/page.tsx
 "use client";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { getIdToken, getRoleFromToken } from "@/lib/auth";
 import MessageVisual from "@/components/chat/MessageVisual";
 import { BigNumberCard } from "@/components/chat/BigNumberCard";
 import { BarChartCard } from "@/components/chat/BarChartCard";
@@ -8,8 +10,27 @@ import { LineChartCard } from "@/components/chat/LineChartCard";
 import { PieChartCard } from "@/components/chat/PieChartCard";
 
 export default function MetricsPage() {
+  const router = useRouter();
+  const [ready, setReady] = useState(false);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [charts, setCharts] = useState<any[]>([]);
+
+  useEffect(() => {
+    // Verificar autenticación y rol
+    const token = getIdToken();
+    if (!token) {
+      router.replace("/?error=unauthenticated");
+      return;
+    }
+
+    const role = getRoleFromToken(token);
+    if (role !== "Supervisor") {
+      router.replace("/?error=forbidden");
+      return;
+    }
+
+    setReady(true);
+  }, [router]);
 
   useEffect(() => {
     setCharts([
@@ -49,6 +70,14 @@ export default function MetricsPage() {
       },
     ]);
   }, []);
+
+  if (!ready) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <p className="text-gray-600">Cargando…</p>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-3xl mx-auto p-4 sm:p-6">

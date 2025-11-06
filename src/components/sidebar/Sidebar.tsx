@@ -1,8 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { agentApi } from '@/lib/api';
 import { AgentInfo, ConnectionTest } from '@/types';
+import { getIdToken, getRoleFromToken } from '@/lib/auth';
+import { LoginButtons } from '@/components/auth/LoginButtons';
 import { 
   Plus, 
   MessageSquare, 
@@ -12,7 +15,8 @@ import {
   ChevronRight,
   Wifi,
   WifiOff,
-  Loader2
+  Loader2,
+  BarChart3
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -20,11 +24,27 @@ interface SidebarProps {
 }
 
 export function Sidebar({ onNewChat }: SidebarProps) {
+  const router = useRouter();
   const [isAgentInfoExpanded, setIsAgentInfoExpanded] = useState(false);
   const [agentInfo, setAgentInfo] = useState<AgentInfo | null>(null);
   const [connectionTest, setConnectionTest] = useState<ConnectionTest | null>(null);
   const [isTestingConnection, setIsTestingConnection] = useState(false);
   const [lastConnectionCheck, setLastConnectionCheck] = useState<string | null>(null);
+  const [role, setRole] = useState<"Supervisor" | "Agent" | "Unknown">("Unknown");
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    // Marcar como montado y actualizar rol
+    setMounted(true);
+    const updateRole = () => {
+      const token = getIdToken();
+      setRole(getRoleFromToken(token));
+    };
+    updateRole();
+    // Escuchar cambios en localStorage (para otros tabs)
+    window.addEventListener('storage', updateRole);
+    return () => window.removeEventListener('storage', updateRole);
+  }, []);
 
   const loadAgentInfo = async () => {
     try {
@@ -177,25 +197,22 @@ export function Sidebar({ onNewChat }: SidebarProps) {
       </div>
 
 
-      {/* User Profile */}
-      <div className="mt-auto p-3 sm:p-4">
-        <div className="flex items-center justify-between p-2 sm:p-3 bg-white border border-gray-200 rounded-lg">
-          <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
-            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#D9F2FA' }}>
-              <User className="w-4 h-4 sm:w-5 sm:h-5" style={{ color: '#00A9E0' }} />
-            </div>
-            <div className="min-w-0 flex-1">
-              <div className="font-medium text-gray-900 text-sm sm:text-base truncate">Usuario</div>
-            </div>
-          </div>
-          <button className="p-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
-            <div className="flex flex-col gap-1">
-              <div className="w-1 h-1 bg-gray-600 rounded-full"></div>
-              <div className="w-1 h-1 bg-gray-600 rounded-full"></div>
-              <div className="w-1 h-1 bg-gray-600 rounded-full"></div>
-            </div>
+      {/* Metrics Section - Solo para Supervisores */}
+      {mounted && role === "Supervisor" && (
+        <div className="px-3 sm:px-4">
+          <button
+            onClick={() => router.push("/metrics")}
+            className="w-full flex items-center gap-2 sm:gap-3 px-3 py-2 text-left text-gray-700 hover:bg-gray-100 rounded-lg transition-colors text-sm sm:text-base"
+          >
+            <BarChart3 className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
+            <span className="truncate">Métricas</span>
           </button>
         </div>
+      )}
+
+      {/* User Profile */}
+      <div className="mt-auto p-3 sm:p-4 space-y-2">
+        <LoginButtons />
       </div>
     </div>
   );
