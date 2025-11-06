@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { agentApi } from '@/lib/api';
+import { useState, useEffect } from 'react';
+import { agentApi, authApi } from '@/lib/api';
 import { AgentInfo, ConnectionTest } from '@/types';
 import { 
   Plus, 
@@ -12,7 +12,9 @@ import {
   ChevronRight,
   Wifi,
   WifiOff,
-  Loader2
+  Loader2,
+  LogIn,
+  LogOut
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -25,6 +27,14 @@ export function Sidebar({ onNewChat }: SidebarProps) {
   const [connectionTest, setConnectionTest] = useState<ConnectionTest | null>(null);
   const [isTestingConnection, setIsTestingConnection] = useState(false);
   const [lastConnectionCheck, setLastConnectionCheck] = useState<string | null>(null);
+  const [user, setUser] = useState<{ email: string; groups: string[] } | null>(null);
+  const [isLoadingUser, setIsLoadingUser] = useState(true);
+
+  // Cognito configuration
+  const domain = process.env.NEXT_PUBLIC_COGNITO_DOMAIN || 'https://us-east-1wcnmdx46j.auth.us-east-1.amazoncognito.com';
+  const clientId = process.env.NEXT_PUBLIC_COGNITO_CLIENT_ID || '5n2ee26mn0o1bbem2v091gp4fp';
+  const redirect = encodeURIComponent(process.env.NEXT_PUBLIC_OAUTH_REDIRECT_URI || 'http://localhost:3000/login/callback');
+  const loginUrl = `${domain}/login?client_id=${clientId}&response_type=code&scope=email+openid+profile&redirect_uri=${redirect}`;
 
   const loadAgentInfo = async () => {
     try {
@@ -58,6 +68,45 @@ export function Sidebar({ onNewChat }: SidebarProps) {
       loadAgentInfo();
     }
     setIsAgentInfoExpanded(!isAgentInfoExpanded);
+  };
+
+  // Load user info on mount (solo si hay cookie)
+  useEffect(() => {
+    const loadUser = async () => {
+      // Verificar si hay cookie antes de hacer la llamada
+      // Esto evita llamadas innecesarias si el usuario no está autenticado
+      try {
+        const userData = await authApi.me();
+        setUser(userData);
+      } catch (error) {
+        // User not authenticated - esto es normal si no hay sesión
+        setUser(null);
+      } finally {
+        setIsLoadingUser(false);
+      }
+    };
+    
+    // Pequeño delay para evitar múltiples llamadas al cargar
+    const timer = setTimeout(loadUser, 100);
+    return () => clearTimeout(timer);
+  }, []);
+
+  const handleLogin = () => {
+    window.location.href = loginUrl;
+  };
+
+  const handleLogout = async () => {
+    try {
+      await authApi.logout();
+      // Optional: redirect to hosted-ui logout to end Cognito session
+      const logoutUrl = `${domain}/logout?client_id=${clientId}&logout_uri=${encodeURIComponent('http://localhost:3000')}`;
+      window.location.href = logoutUrl;
+    } catch (error) {
+      console.error('Error logging out:', error);
+      // Still clear local state
+      setUser(null);
+      window.location.href = '/';
+    }
   };
 
   return (
@@ -177,25 +226,52 @@ export function Sidebar({ onNewChat }: SidebarProps) {
       </div>
 
 
-      {/* User Profile */}
+      {/* User Profile / Login */}
       <div className="mt-auto p-3 sm:p-4">
-        <div className="flex items-center justify-between p-2 sm:p-3 bg-white border border-gray-200 rounded-lg">
-          <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
-            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#D9F2FA' }}>
-              <User className="w-4 h-4 sm:w-5 sm:h-5" style={{ color: '#00A9E0' }} />
-            </div>
-            <div className="min-w-0 flex-1">
-              <div className="font-medium text-gray-900 text-sm sm:text-base truncate">Usuario</div>
-            </div>
+        {isLoadingUser ? (
+          <div className="p-2 sm:p-3 bg-white border border-gray-200 rounded-lg text-center text-sm text-gray-600">
+            Cargando...
           </div>
-          <button className="p-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
-            <div className="flex flex-col gap-1">
-              <div className="w-1 h-1 bg-gray-600 rounded-full"></div>
-              <div className="w-1 h-1 bg-gray-600 rounded-full"></div>
-              <div className="w-1 h-1 bg-gray-600 rounded-full"></div>
+        ) : user ? (
+          <div className="flex items-center justify-between p-2 sm:p-3 bg-white border border-gray-200 rounded-lg">
+            <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#D9F2FA' }}>
+                <User className="w-4 h-4 sm:w-5 sm:h-5" style={{ color: '#00A9E0' }} />
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="font-medium text-gray-900 text-sm sm:text-base truncate">{user.email}</div>
+                <div className="text-xs text-gray-500 truncate">{user.groups.join(', ')}</div>
+              </div>
             </div>
+            <button
+              onClick={handleLogout}
+              className="p-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+              title="Cerrar sesión"
+            >
+              <LogOut className="w-4 h-4 text-gray-600" />
+            </button>
+          </div>
+        ) : (
+          <button
+            onClick={handleLogin}
+            className="w-full flex items-center justify-center gap-2 px-3 py-2 text-white rounded-lg transition-colors text-sm sm:text-base"
+            style={{
+              backgroundColor: '#00A9E0',
+              boxShadow: '0px 4px 4px rgba(0, 0, 0, 0.25)'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = '#D9F2FA';
+              e.currentTarget.style.color = '#000000';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = '#00A9E0';
+              e.currentTarget.style.color = '#ffffff';
+            }}
+          >
+            <LogIn className="w-4 h-4 sm:w-5 sm:h-5" />
+            <span>Iniciar sesión</span>
           </button>
-        </div>
+        )}
       </div>
     </div>
   );
