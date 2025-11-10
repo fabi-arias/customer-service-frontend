@@ -9,7 +9,7 @@ import { Loader2 } from 'lucide-react';
 const domain = process.env.NEXT_PUBLIC_COGNITO_DOMAIN || 'https://us-east-1wcnmdx46j.auth.us-east-1.amazoncognito.com';
 const clientId = process.env.NEXT_PUBLIC_COGNITO_CLIENT_ID || '5n2ee26mn0o1bbem2v091gp4fp';
 const redirect = encodeURIComponent(process.env.NEXT_PUBLIC_OAUTH_REDIRECT_URI || 'http://localhost:3000/login/callback');
-const loginUrl = `${domain}/login?client_id=${clientId}&response_type=code&scope=email+openid+profile&redirect_uri=${redirect}`;
+const loginUrl = `${domain}/login?client_id=${clientId}&response_type=code&scope=email+openid+profile&redirect_uri=${redirect}&identity_provider=Google&prompt=select_account`;
 
 export default function AcceptInvitePage() {
   const sp = useSearchParams();
@@ -30,14 +30,12 @@ export default function AcceptInvitePage() {
       try {
         setMsg('Validando token de invitación...');
         const { data } = await api.post(`/auth/accept?token=${encodeURIComponent(token)}`);
-        
         if (data?.ok) {
           setMsg('Invitación activada correctamente. Redirigiendo al login...');
           setIsLoading(false);
-          // Redirigir a Cognito Hosted UI después de 2 segundos
           setTimeout(() => {
             window.location.href = loginUrl;
-          }, 2000);
+          }, 1200);
         } else {
           setError('No se pudo activar la invitación.');
           setIsLoading(false);
@@ -56,7 +54,8 @@ export default function AcceptInvitePage() {
       <div className="bg-white p-8 rounded-lg shadow-md max-w-md w-full mx-4">
         {isLoading ? (
           <div className="flex flex-col items-center space-y-4">
-            <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+            {/* Loader con color de marca */}
+            <Loader2 className="w-8 h-8 animate-spin" style={{ color: '#00A9E0' }} />
             <p className="text-gray-700">{msg}</p>
           </div>
         ) : error ? (
@@ -78,7 +77,8 @@ export default function AcceptInvitePage() {
             </div>
             <button
               onClick={() => router.push('/')}
-              className="mt-4 w-full px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+              className="mt-4 w-full px-4 py-2 text-white rounded hover:opacity-90 transition-colors"
+              style={{ backgroundColor: '#00A9E0' }}  // antes bg-blue-600
             >
               Volver al inicio
             </button>
@@ -89,8 +89,13 @@ export default function AcceptInvitePage() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
             </svg>
             <p className="text-gray-700 text-center">{msg}</p>
+
+            {/* Barra de progreso con color de marca */}
             <div className="w-full bg-gray-200 rounded-full h-2">
-              <div className="bg-blue-600 h-2 rounded-full animate-pulse" style={{ width: '100%' }}></div>
+              <div
+                className="h-2 rounded-full animate-pulse"
+                style={{ width: '100%', backgroundColor: '#00A9E0' }} // antes bg-blue-600
+              />
             </div>
           </div>
         )}
@@ -98,4 +103,3 @@ export default function AcceptInvitePage() {
     </div>
   );
 }
-

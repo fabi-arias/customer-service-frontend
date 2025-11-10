@@ -14,14 +14,17 @@ import {
   WifiOff,
   Loader2,
   LogIn,
-  LogOut
+  LogOut,
+  Users
 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 interface SidebarProps {
   onNewChat: () => void;
 }
 
 export function Sidebar({ onNewChat }: SidebarProps) {
+  const router = useRouter();
   const [isAgentInfoExpanded, setIsAgentInfoExpanded] = useState(false);
   const [agentInfo, setAgentInfo] = useState<AgentInfo | null>(null);
   const [connectionTest, setConnectionTest] = useState<ConnectionTest | null>(null);
@@ -29,12 +32,15 @@ export function Sidebar({ onNewChat }: SidebarProps) {
   const [lastConnectionCheck, setLastConnectionCheck] = useState<string | null>(null);
   const [user, setUser] = useState<{ email: string; groups: string[] } | null>(null);
   const [isLoadingUser, setIsLoadingUser] = useState(true);
+  
+  const isSupervisor = user?.groups.includes('Supervisor') || false;
 
   // Cognito configuration
   const domain = process.env.NEXT_PUBLIC_COGNITO_DOMAIN || 'https://us-east-1wcnmdx46j.auth.us-east-1.amazoncognito.com';
   const clientId = process.env.NEXT_PUBLIC_COGNITO_CLIENT_ID || '5n2ee26mn0o1bbem2v091gp4fp';
   const redirect = encodeURIComponent(process.env.NEXT_PUBLIC_OAUTH_REDIRECT_URI || 'http://localhost:3000/login/callback');
-  const loginUrl = `${domain}/login?client_id=${clientId}&response_type=code&scope=email+openid+profile&redirect_uri=${redirect}`;
+  const logoutRedirect = encodeURIComponent(process.env.NEXT_PUBLIC_LOGOUT_REDIRECT_URI || 'http://localhost:3000');
+  const loginUrl = `${domain}/login?client_id=${clientId}&response_type=code&scope=email+openid+profile&redirect_uri=${redirect}&identity_provider=Google&prompt=select_account`;
 
   const loadAgentInfo = async () => {
     try {
@@ -96,16 +102,32 @@ export function Sidebar({ onNewChat }: SidebarProps) {
   };
 
   const handleLogout = async () => {
+    console.log('🚪 Iniciando logout...');
+    
     try {
+      // 1. Primero, limpiar la cookie del backend
+      console.log('📤 Llamando a authApi.logout()...');
       await authApi.logout();
-      // Optional: redirect to hosted-ui logout to end Cognito session
-      const logoutUrl = `${domain}/logout?client_id=${clientId}&logout_uri=${encodeURIComponent('http://localhost:3000')}`;
-      window.location.href = logoutUrl;
-    } catch (error) {
-      console.error('Error logging out:', error);
-      // Still clear local state
+      console.log('✅ Cookie del backend eliminada');
+      
+      // 2. Limpiar estado local inmediatamente
       setUser(null);
-      window.location.href = '/';
+      
+      // 3. Redirigir directamente a home
+      // El logout local está completo (cookie eliminada, estado limpiado)
+      // Para logout completo de Cognito, necesitas configurar "Sign-out URLs" en Cognito
+      // y usar: ${domain}/logout?client_id=${clientId}&logout_uri=${logoutRedirect}
+      console.log('🔄 Redirigiendo a home (logout local completado)...');
+      console.log('ℹ️ Para logout completo de Cognito, configura "Sign-out URLs" en la consola de Cognito');
+      window.location.replace('/');
+      
+    } catch (error) {
+      console.error('❌ Error en logout:', error);
+      
+      // Si falla, limpiar estado local y redirigir a home directamente
+      setUser(null);
+      console.log('🔄 Redirigiendo a home (logout local completado)...');
+      window.location.replace('/');
     }
   };
 
@@ -225,6 +247,18 @@ export function Sidebar({ onNewChat }: SidebarProps) {
         )}
       </div>
 
+      {/* Supervisor Actions */}
+      {isSupervisor && (
+        <div className="px-3 sm:px-4 mt-4">
+          <button
+            onClick={() => router.push('/admin/users')}
+            className="w-full flex items-center gap-2 sm:gap-3 px-3 py-2 text-left text-gray-700 hover:bg-gray-100 rounded-lg transition-colors text-sm sm:text-base"
+          >
+            <Users className="w-4 h-4 sm:w-5 sm:h-5" />
+            <span className="truncate">Administrar usuarios</span>
+          </button>
+        </div>
+      )}
 
       {/* User Profile / Login */}
       <div className="mt-auto p-3 sm:p-4">
@@ -244,7 +278,12 @@ export function Sidebar({ onNewChat }: SidebarProps) {
               </div>
             </div>
             <button
-              onClick={handleLogout}
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                handleLogout();
+              }}
               className="p-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
               title="Cerrar sesión"
             >

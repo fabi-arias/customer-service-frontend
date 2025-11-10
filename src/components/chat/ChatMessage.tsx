@@ -1,5 +1,6 @@
 'use client';
 
+import React, { type ReactNode } from 'react';
 import { ChatMessage as ChatMessageType } from '@/types';
 import { parseBedrockResponse } from '@/lib/responseParser';
 import { TicketCard } from './TicketCard';
@@ -13,11 +14,24 @@ import { User } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import Image from "next/image";
 import lupa from "@/public/icono-logo.png";
-import type { ReactNode } from 'react';
 
 interface ChatMessageProps {
   message: ChatMessageType;
 }
+
+// Helper function to preprocess text for markdown rendering
+const preprocessTextForMarkdown = (text: string): string => {
+  if (!text) return '';
+  
+  // First, convert literal \n to actual newlines
+  let processed = text.replace(/\\n/g, '\n');
+  
+  // Convert bullet points (•) to markdown list format
+  // Match lines that start with • (with optional whitespace before)
+  processed = processed.replace(/^(\s*)•\s+/gm, '$1- ');
+  
+  return processed;
+};
 
 export function ChatMessage({ message }: ChatMessageProps) {
   const isUser = message.role === 'user';
@@ -82,15 +96,17 @@ export function ChatMessage({ message }: ChatMessageProps) {
               {/* Direct message content if no parsed response */}
               {!parsedResponse && (
                 <div 
-                  className="whitespace-pre-wrap text-left break-words"
+                  className="text-left prose prose-sm max-w-none"
                   style={{
                     fontFamily: 'var(--font-inter), sans-serif',
-                    fontSize: '14px',
-                    fontWeight: '400',
                     color: '#000000'
                   }}
                 >
-                  {message.content}
+                  <ReactMarkdown
+                    components={markdownComponents}
+                  >
+                    {preprocessTextForMarkdown(message.content)}
+                  </ReactMarkdown>
                 </div>
               )}
 
@@ -98,6 +114,8 @@ export function ChatMessage({ message }: ChatMessageProps) {
               {parsedResponse?.orderedElements && parsedResponse.orderedElements.length > 0 ? (
                 parsedResponse.orderedElements.map((element, index) => {
                   if (element.type === 'text') {
+                    // Preprocess text for markdown (handles \n and bullet points)
+                    const processedContent = preprocessTextForMarkdown(element.content);
                     return (
                       <div 
                         key={index}
@@ -110,7 +128,7 @@ export function ChatMessage({ message }: ChatMessageProps) {
                         <ReactMarkdown
                           components={markdownComponents}
                         >
-                          {element.content}
+                          {processedContent}
                         </ReactMarkdown>
                       </div>
                     );
@@ -167,7 +185,7 @@ export function ChatMessage({ message }: ChatMessageProps) {
                   <ReactMarkdown
                     components={markdownComponents}
                   >
-                    {parsedResponse.conversational}
+                    {preprocessTextForMarkdown(parsedResponse.conversational)}
                   </ReactMarkdown>
                 </div>
               )}
@@ -265,7 +283,7 @@ export function ChatMessage({ message }: ChatMessageProps) {
                       <ReactMarkdown
                         components={markdownComponents}
                       >
-                        {parsedResponse.additionalText}
+                        {preprocessTextForMarkdown(parsedResponse.additionalText)}
                       </ReactMarkdown>
                     </div>
                   )}

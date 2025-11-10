@@ -102,6 +102,43 @@ export const authApi = {
     const response = await api.post(`/auth/accept?token=${encodeURIComponent(token)}`);
     return response.data;
   },
+
+  listUsers: async (): Promise<{
+    ok: boolean;
+    users: Array<{
+      email: string;
+      role: string;
+      status: string;
+      invited_by: string;
+      token_expires_at: string | null;
+      created_at: string;
+      updated_at: string;
+    }>;
+    count: number;
+  }> => {
+    const response = await api.get('/auth/users');
+    return response.data;
+  },
+
+  updateUserRole: async (email: string, role: 'Agent' | 'Supervisor'): Promise<{
+    ok: boolean;
+    email: string;
+    role: string;
+    message: string;
+  }> => {
+    const response = await api.patch(`/auth/users/${encodeURIComponent(email)}/role`, { role });
+    return response.data;
+  },
+
+  updateUserStatus: async (email: string, status: 'pending' | 'active' | 'revoked'): Promise<{
+    ok: boolean;
+    email: string;
+    status: string;
+    message: string;
+  }> => {
+    const response = await api.patch(`/auth/users/${encodeURIComponent(email)}/status`, { status });
+    return response.data;
+  },
 };
 
 export default api;

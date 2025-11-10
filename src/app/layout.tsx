@@ -26,8 +26,11 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Spot - Asistente de Servicio al Cliente",
+  title: "Spot",
   description: "Sistema de chat inteligente para consultas sobre tickets y contactos",
+  icons: {
+    icon: "/icono-logo.png",
+  },
 };
 
 export default function RootLayout({
