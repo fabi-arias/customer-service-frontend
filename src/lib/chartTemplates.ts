@@ -8,6 +8,7 @@ interface ChartMetadata {
   xType?: "quantitative" | "nominal" | "ordinal" | "temporal";
   yType?: "quantitative" | "nominal" | "ordinal" | "temporal";
   colorField?: string;
+  valueField?: string; // For pie charts
   xTitle?: string;
   yTitle?: string;
   suggestedHeight?: number;
@@ -31,7 +32,13 @@ const BRAND_CONFIG = {
     labelColor: "#132933",
     titleColor: "#212121"
   },
-  view: { stroke: "transparent" }
+  view: { stroke: "transparent" },
+  legend: {
+    labelFontSize: 14,
+    titleFontSize: 16,
+    titleColor: "#000000",
+    labelColor: "#132933"
+  }
 };
 
 // Calculate dynamic height based on data length
@@ -162,6 +169,54 @@ export function generateLineChart(
   };
 }
 
+// Generate pie chart spec
+export function generatePieChart(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  data: any[],
+  metadata: ChartMetadata
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+): any {
+  const {
+    yField = "source",
+    valueField = "count",
+    yTitle = "Canal"
+  } = metadata;
+
+  return {
+    $schema: "https://vega.github.io/schema/vega-lite/v5.json",
+    data: { values: data },
+    encoding: {
+      theta: {
+        field: valueField,
+        type: "quantitative",
+        stack: true
+      },
+      color: {
+        field: yField,
+        type: "nominal",
+        legend: { 
+          title: yTitle,
+          labelFontSize: 14,
+          titleFontSize: 16
+        }
+      },
+      tooltip: [
+        { field: yField, type: "nominal", title: yTitle },
+        { field: valueField, type: "quantitative", format: "d", title: "Tickets" },
+        { field: "pct", type: "quantitative", format: ".1f", title: "Porcentaje", formatType: "number" }
+      ]
+    },
+    layer: [
+      {
+        mark: { type: "arc", tooltip: true }
+      },
+    ],
+    width: 250,
+    height: 250,
+    config: BRAND_CONFIG
+  };
+}
+
 // Auto-generate spec based on chartType hint
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function generateChartSpec(payload: any):
@@ -178,6 +233,8 @@ export function generateChartSpec(payload: any):
       return generateBarChart(data, metadata);
     case "line":
       return generateLineChart(data, metadata);
+    case "pie":
+      return generatePieChart(data, metadata);
     default:
       return null;
   }

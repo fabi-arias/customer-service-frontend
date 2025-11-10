@@ -92,6 +92,13 @@ export interface Contact {
   owner_name?: string;
 }
 
+export type OrderedElement = 
+  | { type: 'text'; content: string }
+  | { type: 'chart'; data: any }
+  | { type: 'bigNumber'; data: any }
+  | { type: 'ticket'; data: Ticket }
+  | { type: 'contact'; data: Contact };
+
 export interface ParsedResponse {
   conversational: string;
   tickets: Ticket[];
@@ -101,6 +108,8 @@ export interface ParsedResponse {
   chartData?: any[]; // For storing multiple chart-related JSON data
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   bigNumberData?: any[]; // For storing big number visualizations
+  // Ordered elements preserving the original order from the agent response
+  orderedElements?: OrderedElement[];
 }
 
 

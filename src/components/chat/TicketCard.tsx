@@ -35,26 +35,26 @@ export function TicketCard({ ticket }: TicketCardProps) {
       {/* Header - Always visible */}
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full p-4 text-left hover:bg-gray-50 transition-colors flex items-center justify-between"
+        className="w-full p-3 sm:p-4 text-left hover:bg-gray-50 transition-colors flex items-center justify-between"
       >
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-1 min-w-0">
           {isExpanded ? (
-            <ChevronDown className="w-4 h-4 text-gray-500" />
+            <ChevronDown className="w-4 h-4 text-gray-500 flex-shrink-0" />
           ) : (
-            <ChevronRight className="w-4 h-4 text-gray-500" />
+            <ChevronRight className="w-4 h-4 text-gray-500 flex-shrink-0" />
           )}
-          <span className="font-semibold text-gray-900">{title}</span>
+          <span className="font-semibold text-gray-900 text-sm sm:text-base truncate">{title}</span>
         </div>
       </button>
 
       {/* Expandable content */}
       {isExpanded && (
-        <div className="px-4 pb-4 border-t border-gray-100">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+        <div className="px-3 sm:px-4 pb-3 sm:pb-4 border-t border-gray-100">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 mt-4">
             {/* Basic Information */}
             <div>
-              <h5 className="font-semibold text-gray-900 mb-3">Información Básica</h5>
-              <div className="space-y-2 text-sm">
+              <h5 className="font-semibold text-gray-900 mb-2 sm:mb-3 text-sm sm:text-base">Información Básica</h5>
+              <div className="space-y-2 text-xs sm:text-sm">
                 <div>
                   <span className="font-bold text-gray-700">ID:</span>
                   <span className="ml-2 text-gray-900">{ticketId}</span>
@@ -84,8 +84,8 @@ export function TicketCard({ ticket }: TicketCardProps) {
 
             {/* Additional Details */}
             <div>
-              <h5 className="font-semibold text-gray-900 mb-3">Detalles Adicionales</h5>
-              <div className="space-y-2 text-sm">
+              <h5 className="font-semibold text-gray-900 mb-2 sm:mb-3 text-sm sm:text-base">Detalles Adicionales</h5>
+              <div className="space-y-2 text-xs sm:text-sm">
                 <div>
                   <span className="font-bold text-gray-700">Creado:</span>
                   <span className="ml-2 text-gray-900">{createdDate}</span>
@@ -108,9 +108,9 @@ export function TicketCard({ ticket }: TicketCardProps) {
 
           {/* Content */}
           {content && content !== 'N/A' && (
-            <div className="mt-4">
-              <h5 className="font-semibold text-gray-900 mb-3">Descripción</h5>
-              <div className="bg-blue-50 border-l-4 border-blue-400 p-3 rounded-r text-sm text-gray-900">
+            <div className="mt-3 sm:mt-4">
+              <h5 className="font-semibold text-gray-900 mb-2 sm:mb-3 text-sm sm:text-base">Descripción</h5>
+              <div className="bg-blue-50 border-l-4 border-blue-400 p-2 sm:p-3 rounded-r text-xs sm:text-sm text-gray-900 break-words">
                 {content}
               </div>
             </div>
@@ -118,9 +118,9 @@ export function TicketCard({ ticket }: TicketCardProps) {
 
           {/* Resolution */}
           {resolution && resolution !== 'N/A' && (
-            <div className="mt-4">
-              <h5 className="font-semibold text-gray-900 mb-3">Resolución</h5>
-              <div className="bg-green-50 border-l-4 border-green-400 p-3 rounded-r text-sm text-gray-900">
+            <div className="mt-3 sm:mt-4">
+              <h5 className="font-semibold text-gray-900 mb-2 sm:mb-3 text-sm sm:text-base">Resolución</h5>
+              <div className="bg-green-50 border-l-4 border-green-400 p-2 sm:p-3 rounded-r text-xs sm:text-sm text-gray-900 break-words">
                 {resolution}
               </div>
             </div>
@@ -128,14 +128,14 @@ export function TicketCard({ ticket }: TicketCardProps) {
 
           {/* Ticket URL (enlace/acción) */}
           {ticketUrl && ticketUrl !== 'N/A' && (
-            <div className="mt-4">
-              <h5 className="font-semibold text-slate-900 mb-3">Enlace al ticket en HubSpot</h5>
-              <div className="bg-slate-100 border-l-4 border-slate-400 p-3 rounded-r text-sm text-blue-900">
+            <div className="mt-3 sm:mt-4">
+              <h5 className="font-semibold text-slate-900 mb-2 sm:mb-3 text-sm sm:text-base">Enlace al ticket en HubSpot</h5>
+              <div className="bg-slate-100 border-l-4 border-slate-400 p-2 sm:p-3 rounded-r text-xs sm:text-sm text-blue-900 break-words">
                 <a
                   href={ticketUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="underline underline-offset-2 hover:text-blue-700"
+                  className="underline underline-offset-2 hover:text-blue-700 break-all"
                 >
                   {ticketUrl}
                 </a>
