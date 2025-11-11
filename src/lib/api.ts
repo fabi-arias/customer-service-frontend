@@ -1,6 +1,6 @@
 // src/lib/api.ts
 // API client for communicating with the FastAPI backend
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 import { ChatRequest, ChatResponse, AgentInfo, ConnectionTest, DatabaseStats } from '@/types';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
@@ -13,6 +13,31 @@ const api = axios.create({
     'Content-Type': 'application/json',
   },
 });
+
+// Interceptor para manejar errores 401 (No autorizado) globalmente
+api.interceptors.response.use(
+  (response) => response,
+  (error: AxiosError) => {
+    // Manejar errores 401 (Unauthorized) - Token expirado o inválido
+    if (error.response?.status === 401) {
+      // Solo redirigir si no estamos ya en una página de login o callback
+      const currentPath = typeof window !== 'undefined' ? window.location.pathname : '';
+      const isAuthPage = currentPath.includes('/login') || currentPath.includes('/callback');
+      
+      if (!isAuthPage) {
+        // Limpiar cualquier estado de usuario almacenado localmente
+        // Nota: La cookie HttpOnly se maneja en el servidor, pero podemos
+        // disparar eventos para que los componentes sepan que la sesión expiró
+        if (typeof window !== 'undefined') {
+          // Disparar evento personalizado para notificar a los componentes
+          window.dispatchEvent(new CustomEvent('auth:unauthorized'));
+        }
+      }
+    }
+    
+    return Promise.reject(error);
+  }
+);
 
 // Chat API
 export const chatApi = {

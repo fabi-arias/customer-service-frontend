@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { agentApi, authApi } from '@/lib/api';
+import { useAuth } from '@/hooks/useAuth';
 import { AgentInfo, ConnectionTest } from '@/types';
 import { 
   Plus, 
@@ -25,13 +26,12 @@ interface SidebarProps {
 
 export function Sidebar({ onNewChat }: SidebarProps) {
   const router = useRouter();
+  const { user, isLoading: isLoadingUser, clearAuth } = useAuth();
   const [isAgentInfoExpanded, setIsAgentInfoExpanded] = useState(false);
   const [agentInfo, setAgentInfo] = useState<AgentInfo | null>(null);
   const [connectionTest, setConnectionTest] = useState<ConnectionTest | null>(null);
   const [isTestingConnection, setIsTestingConnection] = useState(false);
   const [lastConnectionCheck, setLastConnectionCheck] = useState<string | null>(null);
-  const [user, setUser] = useState<{ email: string; groups: string[] } | null>(null);
-  const [isLoadingUser, setIsLoadingUser] = useState(true);
   
   const isSupervisor = user?.groups.includes('Supervisor') || false;
 
@@ -76,27 +76,6 @@ export function Sidebar({ onNewChat }: SidebarProps) {
     setIsAgentInfoExpanded(!isAgentInfoExpanded);
   };
 
-  // Load user info on mount (solo si hay cookie)
-  useEffect(() => {
-    const loadUser = async () => {
-      // Verificar si hay cookie antes de hacer la llamada
-      // Esto evita llamadas innecesarias si el usuario no está autenticado
-      try {
-        const userData = await authApi.me();
-        setUser(userData);
-      } catch (error) {
-        // User not authenticated - esto es normal si no hay sesión
-        setUser(null);
-      } finally {
-        setIsLoadingUser(false);
-      }
-    };
-    
-    // Pequeño delay para evitar múltiples llamadas al cargar
-    const timer = setTimeout(loadUser, 100);
-    return () => clearTimeout(timer);
-  }, []);
-
   const handleLogin = () => {
     window.location.href = loginUrl;
   };
@@ -110,8 +89,8 @@ export function Sidebar({ onNewChat }: SidebarProps) {
       await authApi.logout();
       console.log('✅ Cookie del backend eliminada');
       
-      // 2. Limpiar estado local inmediatamente
-      setUser(null);
+      // 2. Limpiar estado local usando el hook centralizado
+      clearAuth();
       
       // 3. Redirigir directamente a home
       // El logout local está completo (cookie eliminada, estado limpiado)
@@ -125,7 +104,7 @@ export function Sidebar({ onNewChat }: SidebarProps) {
       console.error('❌ Error en logout:', error);
       
       // Si falla, limpiar estado local y redirigir a home directamente
-      setUser(null);
+      clearAuth();
       console.log('🔄 Redirigiendo a home (logout local completado)...');
       window.location.replace('/');
     }

@@ -4,6 +4,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { authApi } from '@/lib/api';
+import { useAuth } from '@/hooks/useAuth';
 import { ArrowLeft, Loader2, UserPlus, MoreVertical, Copy, RotateCcw, Ban, CheckCircle, RefreshCw } from 'lucide-react';
 import { InviteModal } from '@/components/ui/InviteModal';
 
@@ -19,8 +20,7 @@ interface InvitedUser {
 
 export default function AdminUsersPage() {
   const router = useRouter();
-  const [user, setUser] = useState<{ email: string; groups: string[] } | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const { user, isLoading } = useAuth();
   const [users, setUsers] = useState<InvitedUser[]>([]);
   const [isLoadingUsers, setIsLoadingUsers] = useState(true);
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
@@ -28,25 +28,16 @@ export default function AdminUsersPage() {
   const [actionMenuOpen, setActionMenuOpen] = useState<string | null>(null);
   const [copiedEmail, setCopiedEmail] = useState<string | null>(null);
 
+  // Verificar que sea Supervisor usando el hook centralizado
   useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const userData = await authApi.me();
-        setUser(userData);
-        
-        // Verificar que sea Supervisor
-        if (!userData.groups.includes('Supervisor')) {
-          router.push('/access-denied');
-          return;
-        }
-      } catch (error) {
+    if (!isLoading && user) {
+      if (!user.groups.includes('Supervisor')) {
         router.push('/access-denied');
-      } finally {
-        setIsLoading(false);
       }
-    };
-    checkAuth();
-  }, [router]);
+    } else if (!isLoading && !user) {
+      router.push('/access-denied');
+    }
+  }, [user, isLoading, router]);
 
   const loadUsers = async () => {
     if (user?.groups.includes('Supervisor')) {
