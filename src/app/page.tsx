@@ -5,15 +5,14 @@ import { useState, useEffect } from 'react';
 import { Header } from '@/components/ui/Header';
 import { Sidebar } from '@/components/sidebar/Sidebar';
 import { ChatInterface } from '@/components/chat/ChatInterface';
-import { authApi } from '@/lib/api';
+import { useAuth } from '@/hooks/useAuth';
 import { LogIn, Loader2 } from 'lucide-react';
 
 export default function Home() {
   const [chatKey, setChatKey] = useState(0);
   const [sidebarVisible, setSidebarVisible] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
-  const [user, setUser] = useState<{ email: string; groups: string[] } | null>(null);
-  const [isLoadingAuth, setIsLoadingAuth] = useState(true);
+  const { user, isLoading: isLoadingAuth } = useAuth();
 
   // Cognito configuration
   const domain = process.env.NEXT_PUBLIC_COGNITO_DOMAIN || 'https://us-east-1wcnmdx46j.auth.us-east-1.amazoncognito.com';
@@ -30,20 +29,6 @@ export default function Home() {
     window.addEventListener('resize', checkMobile);
     
     return () => window.removeEventListener('resize', checkMobile);
-  }, []);
-
-  useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const userData = await authApi.me();
-        setUser(userData);
-      } catch (error) {
-        setUser(null);
-      } finally {
-        setIsLoadingAuth(false);
-      }
-    };
-    checkAuth();
   }, []);
 
   const handleLogin = () => {

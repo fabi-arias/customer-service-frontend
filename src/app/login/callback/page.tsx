@@ -48,6 +48,12 @@ export default function Callback() {
         if (res.data?.ok) {
           setMsg('Sesión iniciada correctamente');
           setIsLoading(false);
+          
+          // Invalidar cache de autenticación para forzar refresh
+          if (typeof window !== 'undefined') {
+            window.dispatchEvent(new CustomEvent('auth:login-success'));
+          }
+          
           // Pequeño delay para que el usuario vea el mensaje de éxito
           setTimeout(() => {
             router.replace('/');
