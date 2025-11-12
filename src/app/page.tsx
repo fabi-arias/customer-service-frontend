@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react';
 import { Header } from '@/components/ui/Header';
 import { Sidebar } from '@/components/sidebar/Sidebar';
 import { ChatInterface } from '@/components/chat/ChatInterface';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth } from '@/context/AuthContext';
 import { LogIn, Loader2 } from 'lucide-react';
 
 export default function Home() {

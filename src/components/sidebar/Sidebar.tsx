@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { agentApi, authApi } from '@/lib/api';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth } from '@/context/AuthContext';
+import { clearUser } from '@/lib/auth-user';
 import { AgentInfo, ConnectionTest } from '@/types';
 import { 
   Plus, 
@@ -16,7 +17,8 @@ import {
   Loader2,
   LogIn,
   LogOut,
-  Users
+  Users,
+  MoreVertical
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
@@ -26,14 +28,13 @@ interface SidebarProps {
 
 export function Sidebar({ onNewChat }: SidebarProps) {
   const router = useRouter();
-  const { user, isLoading: isLoadingUser, clearAuth } = useAuth();
+  const { user, isSupervisor, isLoading: isLoadingUser } = useAuth();
   const [isAgentInfoExpanded, setIsAgentInfoExpanded] = useState(false);
   const [agentInfo, setAgentInfo] = useState<AgentInfo | null>(null);
   const [connectionTest, setConnectionTest] = useState<ConnectionTest | null>(null);
   const [isTestingConnection, setIsTestingConnection] = useState(false);
   const [lastConnectionCheck, setLastConnectionCheck] = useState<string | null>(null);
-  
-  const isSupervisor = user?.groups.includes('Supervisor') || false;
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
 
   // Cognito configuration
   const domain = process.env.NEXT_PUBLIC_COGNITO_DOMAIN || 'https://us-east-1wcnmdx46j.auth.us-east-1.amazoncognito.com';
@@ -80,6 +81,23 @@ export function Sidebar({ onNewChat }: SidebarProps) {
     window.location.href = loginUrl;
   };
 
+  // Cerrar menú cuando se hace clic fuera
+  useEffect(() => {
+    if (!isUserMenuOpen) return;
+
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      if (!target.closest('.user-menu-container')) {
+        setIsUserMenuOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isUserMenuOpen]);
+
   const handleLogout = async () => {
     console.log('🚪 Iniciando logout...');
     
@@ -89,8 +107,9 @@ export function Sidebar({ onNewChat }: SidebarProps) {
       await authApi.logout();
       console.log('✅ Cookie del backend eliminada');
       
-      // 2. Limpiar estado local usando el hook centralizado
-      clearAuth();
+      // 2. Limpiar cache y disparar evento para actualizar contexto
+      clearUser();
+      window.dispatchEvent(new CustomEvent('auth:unauthorized'));
       
       // 3. Redirigir directamente a home
       // El logout local está completo (cookie eliminada, estado limpiado)
@@ -104,7 +123,8 @@ export function Sidebar({ onNewChat }: SidebarProps) {
       console.error('❌ Error en logout:', error);
       
       // Si falla, limpiar estado local y redirigir a home directamente
-      clearAuth();
+      clearUser();
+      window.dispatchEvent(new CustomEvent('auth:unauthorized'));
       console.log('🔄 Redirigiendo a home (logout local completado)...');
       window.location.replace('/');
     }
@@ -241,33 +261,53 @@ export function Sidebar({ onNewChat }: SidebarProps) {
 
       {/* User Profile / Login */}
       <div className="mt-auto p-3 sm:p-4">
-        {isLoadingUser ? (
-          <div className="p-2 sm:p-3 bg-white border border-gray-200 rounded-lg text-center text-sm text-gray-600">
-            Cargando...
-          </div>
-        ) : user ? (
-          <div className="flex items-center justify-between p-2 sm:p-3 bg-white border border-gray-200 rounded-lg">
-            <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
-              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#D9F2FA' }}>
-                <User className="w-4 h-4 sm:w-5 sm:h-5" style={{ color: '#00A9E0' }} />
+        {user ? (
+          <div className="relative user-menu-container">
+            <div className="flex items-center justify-between p-2 sm:p-3 bg-white border border-gray-200 rounded-lg">
+              <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
+                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#D9F2FA' }}>
+                  <User className="w-4 h-4 sm:w-5 sm:h-5" style={{ color: '#00A9E0' }} />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="font-medium text-gray-900 text-sm sm:text-base truncate">{user.email ?? '—'}</div>
+                  <div className="text-xs text-gray-500 truncate">
+                    {isSupervisor ? 'Supervisor' : user ? 'Agent' : '—'}
+                  </div>
+                </div>
               </div>
-              <div className="min-w-0 flex-1">
-                <div className="font-medium text-gray-900 text-sm sm:text-base truncate">{user.email}</div>
-                <div className="text-xs text-gray-500 truncate">{user.groups.join(', ')}</div>
-              </div>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setIsUserMenuOpen(!isUserMenuOpen);
+                }}
+                className="p-2 hover:bg-gray-50 rounded-lg transition-colors"
+                title="Opciones"
+              >
+                <MoreVertical className="w-4 h-4 text-gray-600" />
+              </button>
             </div>
-            <button
-              type="button"
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                handleLogout();
-              }}
-              className="p-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-              title="Cerrar sesión"
-            >
-              <LogOut className="w-4 h-4 text-gray-600" />
-            </button>
+            
+            {/* Menú desplegable */}
+            {isUserMenuOpen && (
+              <div className="absolute bottom-full right-0 mb-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
+                <div className="py-1">
+                  <button
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      setIsUserMenuOpen(false);
+                      handleLogout();
+                    }}
+                    className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    Cerrar sesión
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         ) : (
           <button

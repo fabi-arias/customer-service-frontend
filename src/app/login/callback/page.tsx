@@ -49,7 +49,7 @@ export default function Callback() {
           setMsg('Sesión iniciada correctamente');
           setIsLoading(false);
           
-          // Invalidar cache de autenticación para forzar refresh
+          // Disparar evento para que el contexto actualice el usuario
           if (typeof window !== 'undefined') {
             window.dispatchEvent(new CustomEvent('auth:login-success'));
           }

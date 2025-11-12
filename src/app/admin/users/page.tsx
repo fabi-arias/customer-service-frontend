@@ -4,7 +4,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { authApi } from '@/lib/api';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth } from '@/context/AuthContext';
 import { ArrowLeft, Loader2, UserPlus, MoreVertical, Copy, RotateCcw, Ban, CheckCircle, RefreshCw } from 'lucide-react';
 import { InviteModal } from '@/components/ui/InviteModal';
 
@@ -31,7 +31,8 @@ export default function AdminUsersPage() {
   // Verificar que sea Supervisor usando el hook centralizado
   useEffect(() => {
     if (!isLoading && user) {
-      if (!user.groups.includes('Supervisor')) {
+      const groups = user.groups ?? [];
+      if (!groups.includes('Supervisor')) {
         router.push('/access-denied');
       }
     } else if (!isLoading && !user) {
@@ -40,7 +41,8 @@ export default function AdminUsersPage() {
   }, [user, isLoading, router]);
 
   const loadUsers = async () => {
-    if (user?.groups.includes('Supervisor')) {
+    const groups = user?.groups ?? [];
+    if (groups.includes('Supervisor')) {
       try {
         setIsLoadingUsers(true);
         const result = await authApi.listUsers();
@@ -54,7 +56,8 @@ export default function AdminUsersPage() {
   };
 
   useEffect(() => {
-    if (user?.groups.includes('Supervisor')) {
+    const groups = user?.groups ?? [];
+    if (groups.includes('Supervisor')) {
       loadUsers();
     }
   }, [user]);
