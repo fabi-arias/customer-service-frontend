@@ -28,7 +28,6 @@ export function InviteModal({ isOpen, onClose, onInviteSuccess }: InviteModalPro
     setIsSubmitting(true);
 
     try {
-      // Validar email
       if (!email.toLowerCase().endsWith('@musclepoints.com')) {
         setError('El email debe ser del dominio @musclepoints.com');
         setIsSubmitting(false);
@@ -38,10 +37,7 @@ export function InviteModal({ isOpen, onClose, onInviteSuccess }: InviteModalPro
       const result = await authApi.invite(email.toLowerCase(), role);
       setInviteUrl(result.invite_url);
       setEmailSent(result.email_sent || false);
-      // Notificar éxito para recargar lista
-      if (onInviteSuccess) {
-        onInviteSuccess();
-      }
+      onInviteSuccess?.();
     } catch (e: any) {
       setError(e?.response?.data?.detail || e?.message || 'Error al enviar invitación');
     } finally {
@@ -68,18 +64,23 @@ export function InviteModal({ isOpen, onClose, onInviteSuccess }: InviteModalPro
   };
 
   return (
-    <div className="fixed inset-0 bg-white bg-opacity-50 z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between p-6 border-b">
-          <h2 className="text-xl font-semibold text-gray-900">Invitar usuario</h2>
+    // Overlay (más suave y con blur)
+    <div className="fixed inset-0 z-50 grid place-items-center p-4 bg-black/20 backdrop-blur-[2px]">
+      {/* Card (rounded-3xl + sombra limpia + ring sutil) */}
+      <div className="bg-white rounded-3xl shadow-[0_10px_30px_rgba(0,0,0,0.12)] ring-1 ring-black/5 max-w-md w-full max-h-[90vh] overflow-y-auto">
+        {/* Header (sin línea dura, más aire, botón cerrar cómodo) */}
+        <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100">
+          <h2 className="text-lg sm:text-xl font-semibold text-gray-900">Invitar usuario</h2>
           <button
             onClick={handleClose}
-            className="text-gray-400 hover:text-gray-600 transition-colors"
+            className="p-2.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+            aria-label="Cerrar"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
+        {/* Body (SIN cambios por ahora) */}
         <div className="p-6">
           {!inviteUrl ? (
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -94,7 +95,7 @@ export function InviteModal({ isOpen, onClose, onInviteSuccess }: InviteModalPro
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="usuario@musclepoints.com"
                   required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00A9E0] focus:border-[#00A9E0]"
                 />
                 <p className="mt-1 text-xs text-gray-500">Debe ser del dominio @musclepoints.com</p>
               </div>
@@ -107,7 +108,7 @@ export function InviteModal({ isOpen, onClose, onInviteSuccess }: InviteModalPro
                   id="role"
                   value={role}
                   onChange={(e) => setRole(e.target.value as 'Agent' | 'Supervisor')}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00A9E0] focus:border-[#00A9E0]"
                 >
                   <option value="Agent">Agent</option>
                   <option value="Supervisor">Supervisor</option>
@@ -233,4 +234,3 @@ export function InviteModal({ isOpen, onClose, onInviteSuccess }: InviteModalPro
     </div>
   );
 }
-
