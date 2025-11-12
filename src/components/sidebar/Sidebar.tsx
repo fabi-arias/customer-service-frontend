@@ -84,28 +84,19 @@ export function Sidebar({ onNewChat, onTemplateSelect }: SidebarProps) {
       console.log('📤 Llamando a authApi.logout()...');
       await authApi.logout();
       console.log('✅ Cookie del backend eliminada');
-      
-      // 2. Limpiar cache y disparar evento para actualizar contexto
-      clearUser();
-      window.dispatchEvent(new CustomEvent('auth:unauthorized'));
-      
-      // 3. Redirigir directamente a home
-      // El logout local está completo (cookie eliminada, estado limpiado)
-      // Para logout completo de Cognito, necesitas configurar "Sign-out URLs" en Cognito
-      // y usar: ${domain}/logout?client_id=${clientId}&logout_uri=${logoutRedirect}
-      console.log('🔄 Redirigiendo a home (logout local completado)...');
-      console.log('ℹ️ Para logout completo de Cognito, configura "Sign-out URLs" en la consola de Cognito');
-      window.location.replace('/');
-      
     } catch (error) {
-      console.error('❌ Error en logout:', error);
-      
-      // Si falla, limpiar estado local y redirigir a home directamente
-      clearUser();
-      window.dispatchEvent(new CustomEvent('auth:unauthorized'));
-      console.log('🔄 Redirigiendo a home (logout local completado)...');
-      window.location.replace('/');
+      console.error('❌ Error en logout del backend:', error);
+      // Continuar con el logout local aunque falle el backend
     }
+    
+    // 2. Limpiar cache y disparar evento para actualizar contexto
+    // Esto actualizará la UI sin necesidad de recargar la página
+    clearUser();
+    window.dispatchEvent(new CustomEvent('auth:unauthorized'));
+    
+    // 3. El contexto ya manejará el cambio de UI mostrando la pantalla de login
+    // No necesitamos hacer window.location.replace ya que React manejará el cambio
+    console.log('✅ Logout completado');
   };
 
   return (
