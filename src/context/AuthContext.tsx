@@ -19,22 +19,23 @@ const Ctx = createContext<AuthState>({
 });
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  // 1) valor sincrónico inicial (cero "Cargando…")
-  const initial = loadCachedUser()?.user ?? null;
-  const [user, setUser] = useState<AuthUser>(initial);
-  const [isLoading, setIsLoading] = useState(initial === null);
+  // 1) Estado inicial consistente entre servidor y cliente
+  const [user, setUser] = useState<AuthUser>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // 2) revalidación en background una sola vez
+  // 2) Cargar cache solo en el cliente después del mount
   useEffect(() => {
-    if (initial === null) {
+    const cached = loadCachedUser();
+    if (cached?.user) {
+      setUser(cached.user);
+      setIsLoading(false);
+      // Revalidar en background sin bloquear
+      getUserCached().then(setUser);
+    } else {
       getUserCached().then((u) => {
         setUser(u);
         setIsLoading(false);
       });
-    } else {
-      setIsLoading(false);
-      // Revalidar en background sin bloquear
-      getUserCached().then(setUser);
     }
   }, []);
 

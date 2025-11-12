@@ -1,80 +1,58 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { agentApi, authApi } from '@/lib/api';
+import { authApi } from '@/lib/api';
 import { useAuth } from '@/context/AuthContext';
 import { clearUser } from '@/lib/auth-user';
-import { AgentInfo, ConnectionTest } from '@/types';
 import { 
   Plus, 
-  MessageSquare, 
-  Bot, 
   User, 
-  ChevronDown, 
-  ChevronRight,
-  Wifi,
-  WifiOff,
-  Loader2,
   LogIn,
   LogOut,
   Users,
-  MoreVertical
+  MoreVertical,
+  Sparkles
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 interface SidebarProps {
   onNewChat: () => void;
+  onTemplateSelect?: (template: string) => void;
 }
 
-export function Sidebar({ onNewChat }: SidebarProps) {
+const SUPERVISOR_TEMPLATES = [
+  'Dame tickets asociados a Carolina Talla',
+  'Muéstrame los tickets creados hoy que aún no han sido resueltos',
+  'Dame la transcripción del ticket con número de itinerario 6560964',
+  'Dame el top de agentes con más tickets cerrados durante esta semana',
+  'Un pasajero desea cambiar la fecha de su vuelo. ¿Cuál es el procedimiento?',
+];
+
+const AGENT_TEMPLATES = [
+  'Dame tickets asociados a Carolina Talla',
+  'Muéstrame los tickets creados hoy que aún no han sido resueltos',
+  'Dame la transcripción del ticket con número de itinerario 6560964',
+  'Un pasajero desea cambiar la fecha de su vuelo. ¿Cuál es el procedimiento?',
+];
+
+export function Sidebar({ onNewChat, onTemplateSelect }: SidebarProps) {
   const router = useRouter();
-  const { user, isSupervisor, isLoading: isLoadingUser } = useAuth();
-  const [isAgentInfoExpanded, setIsAgentInfoExpanded] = useState(false);
-  const [agentInfo, setAgentInfo] = useState<AgentInfo | null>(null);
-  const [connectionTest, setConnectionTest] = useState<ConnectionTest | null>(null);
-  const [isTestingConnection, setIsTestingConnection] = useState(false);
-  const [lastConnectionCheck, setLastConnectionCheck] = useState<string | null>(null);
+  const { user, isSupervisor } = useAuth();
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  
+  // Seleccionar plantillas según el rol
+  const quickTemplates = isSupervisor ? SUPERVISOR_TEMPLATES : AGENT_TEMPLATES;
 
   // Cognito configuration
   const domain = process.env.NEXT_PUBLIC_COGNITO_DOMAIN || 'https://us-east-1wcnmdx46j.auth.us-east-1.amazoncognito.com';
   const clientId = process.env.NEXT_PUBLIC_COGNITO_CLIENT_ID || '5n2ee26mn0o1bbem2v091gp4fp';
   const redirect = encodeURIComponent(process.env.NEXT_PUBLIC_OAUTH_REDIRECT_URI || 'http://localhost:3000/login/callback');
-  const logoutRedirect = encodeURIComponent(process.env.NEXT_PUBLIC_LOGOUT_REDIRECT_URI || 'http://localhost:3000');
   const loginUrl = `${domain}/login?client_id=${clientId}&response_type=code&scope=email+openid+profile&redirect_uri=${redirect}&identity_provider=Google&prompt=select_account`;
 
-  const loadAgentInfo = async () => {
-    try {
-      const info = await agentApi.getInfo();
-      setAgentInfo(info);
-    } catch (error) {
-      console.error('Error loading agent info:', error);
+  const handleTemplateClick = (template: string) => {
+    if (onTemplateSelect) {
+      onTemplateSelect(template);
     }
-  };
-
-  const testConnection = async () => {
-    setIsTestingConnection(true);
-    try {
-      const result = await agentApi.testConnection();
-      setConnectionTest(result);
-      setLastConnectionCheck(new Date().toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }));
-    } catch (error) {
-      console.error('Error testing connection:', error);
-      setConnectionTest({
-        success: false,
-        message: 'Error al probar la conexión',
-        error: error instanceof Error ? error.message : 'Error desconocido'
-      });
-    } finally {
-      setIsTestingConnection(false);
-    }
-  };
-
-  const handleAgentInfoToggle = () => {
-    if (!isAgentInfoExpanded && !agentInfo) {
-      loadAgentInfo();
-    }
-    setIsAgentInfoExpanded(!isAgentInfoExpanded);
   };
 
   const handleLogin = () => {
@@ -152,112 +130,51 @@ export function Sidebar({ onNewChat }: SidebarProps) {
           }}
         >
           <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
-          <span className="truncate">Iniciar nuevo chat</span>
+          <span className="truncate">Nuevo chat</span>
         </button>
         
-        <button
-          disabled
-          className="w-full flex items-center gap-2 sm:gap-3 px-3 py-2 text-left text-white cursor-not-allowed rounded-lg text-sm sm:text-base"
-          style={{
-            backgroundColor: '#00A9E0',
-            boxShadow: '0px 4px 4px rgba(0, 0, 0, 0.25)'
-          }}
-        >
-          <MessageSquare className="w-4 h-4 sm:w-5 sm:h-5" />
-          <span className="truncate">Conversación actual</span>
-        </button>
-      </div>
-
-      {/* Agent Information */}
-      <div className="px-3 sm:px-4">
-        <button
-          onClick={handleAgentInfoToggle}
-          className="w-full flex items-center justify-between px-3 py-2 text-left text-gray-700 hover:bg-gray-100 rounded-lg transition-colors text-sm sm:text-base"
-        >
-          <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
-            <Bot className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
-            <span className="truncate">Información del Agente</span>
-          </div>
-          {isAgentInfoExpanded ? (
-            <ChevronDown className="w-4 h-4" />
-          ) : (
-            <ChevronRight className="w-4 h-4" />
-          )}
-        </button>
-
-        {isAgentInfoExpanded && (
-          <div className="mt-2 p-2 sm:p-3 bg-blue-50 border border-blue-200 rounded-lg">
-            {agentInfo ? (
-              <div className="space-y-2 text-xs sm:text-sm">
-                <div>
-                  <span className="font-medium text-gray-700">Agente ID:</span>
-                  <span className="ml-2 text-gray-900">{agentInfo.agent_id}</span>
-                </div>
-                <div>
-                  <span className="font-medium text-gray-700">Alias:</span>
-                  <span className="ml-2 text-gray-900">{agentInfo.agent_alias_id}</span>
-                </div>
-                <div>
-                  <span className="font-medium text-gray-700">Región:</span>
-                  <span className="ml-2 text-gray-900">{agentInfo.region}</span>
-                </div>
-              </div>
-            ) : (
-              <div className="text-sm text-gray-600">Cargando información...</div>
-            )}
-
-            <button
-              onClick={testConnection}
-              disabled={isTestingConnection}
-              className="mt-3 w-full flex items-center justify-center gap-2 px-3 py-2 bg-blue-500 text-white text-xs sm:text-sm rounded hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isTestingConnection ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <Wifi className="w-4 h-4" />
-              )}
-              Probar conexión ahora
-            </button>
-
-            {/* Connection Test Results */}
-            {connectionTest && (
-              <div className="mt-3 p-2 rounded text-sm">
-                {connectionTest.success ? (
-                  <div className="flex items-center gap-2 text-green-700">
-                    <Wifi className="w-4 h-4" />
-                    <span>✅ Conexión e invocación correctas.</span>
-                  </div>
-                ) : (
-                  <div className="flex items-center gap-2 text-red-700">
-                    <WifiOff className="w-4 h-4" />
-                    <span>❌ Falló la invocación: {connectionTest.error}</span>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* Last Connection Check */}
-            {lastConnectionCheck && (
-              <div className="mt-2 text-xs text-gray-500">
-                Última prueba: {lastConnectionCheck}
-              </div>
-            )}
-          </div>
-        )}
-      </div>
-
-      {/* Supervisor Actions */}
-      {isSupervisor && (
-        <div className="px-3 sm:px-4 mt-4">
+        {/* Administrar usuarios - Solo para Supervisores */}
+        {isSupervisor && (
           <button
             onClick={() => router.push('/admin/users')}
-            className="w-full flex items-center gap-2 sm:gap-3 px-3 py-2 text-left text-gray-700 hover:bg-gray-100 rounded-lg transition-colors text-sm sm:text-base"
+            className="w-full flex items-center gap-2 sm:gap-3 px-3 py-2 text-left text-white rounded-lg transition-colors text-sm sm:text-base"
+            style={{
+              backgroundColor: '#00A9E0',
+              boxShadow: '0px 4px 4px rgba(0, 0, 0, 0.25)'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = '#D9F2FA';
+              e.currentTarget.style.color = '#000000';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = '#00A9E0';
+              e.currentTarget.style.color = '#ffffff';
+            }}
           >
             <Users className="w-4 h-4 sm:w-5 sm:h-5" />
             <span className="truncate">Administrar usuarios</span>
           </button>
+        )}
+      </div>
+
+      {/* Plantillas rápidas */}
+      <div className="px-3 sm:px-4">
+        <div className="px-3 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+          Plantillas rápidas
         </div>
-      )}
+        <div className="space-y-1">
+          {quickTemplates.map((template, index) => (
+            <button
+              key={index}
+              onClick={() => handleTemplateClick(template)}
+              className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-lg transition-colors flex items-start gap-2"
+            >
+              <Sparkles className="w-4 h-4 mt-0.5 flex-shrink-0 text-gray-400" />
+              <span className="flex-1">{template}</span>
+            </button>
+          ))}
+        </div>
+      </div>
 
       {/* User Profile / Login */}
       <div className="mt-auto p-3 sm:p-4">

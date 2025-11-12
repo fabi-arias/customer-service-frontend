@@ -7,12 +7,18 @@ import { ChatMessage } from './ChatMessage';
 import { ArrowUp, Loader2 } from 'lucide-react';
 import Image from 'next/image';
 
-export function ChatInterface() {
+interface ChatInterfaceProps {
+  onTemplateRequest?: (template: string) => void;
+  initialInput?: string;
+}
+
+export function ChatInterface({ onTemplateRequest, initialInput }: ChatInterfaceProps) {
   const [messages, setMessages] = useState<ChatMessageType[]>([]);
   const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [sessionId, setSessionId] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   // Auto-scroll to bottom
   const scrollToBottom = () => {
@@ -36,6 +42,30 @@ export function ChatInterface() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Handle template requests from sidebar
+  useEffect(() => {
+    const handleTemplate = (event: Event) => {
+      const customEvent = event as CustomEvent<string>;
+      setInputMessage(customEvent.detail);
+      // Focus textarea after setting message
+      setTimeout(() => {
+        textareaRef.current?.focus();
+      }, 0);
+    };
+
+    window.addEventListener('chat:set-template', handleTemplate);
+    return () => {
+      window.removeEventListener('chat:set-template', handleTemplate);
+    };
+  }, []);
+
+  // Handle initial input
+  useEffect(() => {
+    if (initialInput) {
+      setInputMessage(initialInput);
+    }
+  }, [initialInput]);
 
   const sendMessage = async () => {
     if (!inputMessage.trim() || isLoading) return;
@@ -189,6 +219,7 @@ export function ChatInterface() {
         <div className="flex items-center gap-2 sm:gap-3">
           <div className="flex-1 bg-gray-100 rounded-full px-3 sm:px-4 py-2 sm:py-3">
             <textarea
+              ref={textareaRef}
               value={inputMessage}
               onChange={(e) => setInputMessage(e.target.value)}
               onKeyPress={handleKeyPress}

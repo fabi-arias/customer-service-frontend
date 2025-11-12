@@ -43,12 +43,30 @@ export default function Home() {
     }
   };
 
+  const handleTemplateSelect = (template: string) => {
+    // Dispatch event to ChatInterface to set the input
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('chat:set-template', { detail: template }));
+    }
+    // Close sidebar on mobile after selecting template
+    if (isMobile) {
+      setSidebarVisible(false);
+    }
+  };
+
   const toggleSidebar = () => {
     setSidebarVisible(prev => !prev);
   };
 
   // Mostrar pantalla de login si no está autenticado
-  if (isLoadingAuth) {
+  // Solo mostrar loading en el cliente para evitar hydration mismatch
+  const [isMounted, setIsMounted] = useState(false);
+  
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  if (!isMounted || isLoadingAuth) {
     return (
       <div className="h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
@@ -171,6 +189,7 @@ export default function Home() {
           `}>
             <Sidebar 
               onNewChat={handleNewChat}
+              onTemplateSelect={handleTemplateSelect}
             />
           </div>
         )}
