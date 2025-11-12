@@ -186,8 +186,15 @@ export function Sidebar({ onNewChat, onTemplateSelect }: SidebarProps) {
                   <User className="w-4 h-4 sm:w-5 sm:h-5" style={{ color: '#00A9E0' }} />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <div className="font-medium text-gray-900 text-sm sm:text-base truncate">{user.email ?? '—'}</div>
+                  <div className="font-medium text-gray-900 text-sm sm:text-base truncate">
+                    {user.given_name || user.family_name 
+                      ? `${user.given_name || ''} ${user.family_name || ''}`.trim()
+                      : user.email ?? '—'}
+                  </div>
                   <div className="text-xs text-gray-500 truncate">
+                    {user.email ?? '—'}
+                  </div>
+                  <div className="text-xs text-gray-400 truncate">
                     {isSupervisor ? 'Supervisor' : user ? 'Agent' : '—'}
                   </div>
                 </div>

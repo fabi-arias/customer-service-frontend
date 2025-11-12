@@ -1,7 +1,12 @@
 // src/lib/auth-user.ts
 import { authApi } from '@/lib/api';
 
-export type AuthUser = { email: string; groups: string[] } | null;
+export type AuthUser = { 
+  email: string; 
+  groups: string[];
+  given_name?: string;
+  family_name?: string;
+} | null;
 
 const KEY = 'auth:user:v1';
 const TTL = 60_000; // 60s
