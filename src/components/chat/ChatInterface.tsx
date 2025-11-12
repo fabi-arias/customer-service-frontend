@@ -248,7 +248,7 @@ export function ChatInterface({ onTemplateRequest, initialInput }: ChatInterface
             }}
           >
             {isLoading ? (
-              <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" />
+              <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin text-[#00A9E0]" />
             ) : (
               <ArrowUp className="w-4 h-4 sm:w-5 sm:h-5" />
             )}
