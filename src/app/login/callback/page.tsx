@@ -31,9 +31,7 @@ export default function Callback() {
     }
     
     (async () => {
-      try {
-        setMsg('Intercambiando código por tokens...');
-        
+      try {        
         // Usar URLSearchParams para application/x-www-form-urlencoded
         const params = new URLSearchParams();
         params.append('code', code);
@@ -63,22 +61,43 @@ export default function Callback() {
           setIsLoading(false);
         }
       } catch (e: any) {
-        console.error('Error en callback:', e);
-        
         let errorMessage = 'Error desconocido';
+        let isExpectedError = false;
         
-        if (e.code === 'ECONNABORTED' || e.message?.includes('timeout')) {
+        if (e.response) {
+          // El servidor respondió con un código de error
+          const status = e.response.status;
+          const detail = e.response.data?.detail || e.response.data?.message;
+          
+          if (status === 403 && detail) {
+            // Error 403: es un error esperado (usuario revocado, no invitado, etc.)
+            // No loguear como error del sistema, es un caso de negocio válido
+            errorMessage = detail;
+            isExpectedError = true;
+          } else if (status === 401) {
+            // Error 401: token inválido o expirado
+            errorMessage = detail || 'Tu sesión ha expirado. Por favor, inicia sesión nuevamente.';
+            isExpectedError = true;
+          } else {
+            // Otros errores del servidor (500, etc.) - estos sí son errores del sistema
+            errorMessage = detail || `Error ${status}: ${e.response.statusText}`;
+            if (!isExpectedError) {
+              console.error('Error inesperado en callback:', e);
+            }
+          }
+        } else if (e.code === 'ECONNABORTED' || e.message?.includes('timeout')) {
           errorMessage = 'El servidor tardó demasiado en responder. Verifica que el backend esté corriendo.';
+          console.error('Error de timeout en callback:', e);
         } else if (e.code === 'ERR_NETWORK' || e.message?.includes('Network Error')) {
           errorMessage = 'Error de conexión. Verifica que el backend esté corriendo en http://localhost:8000';
-        } else if (e.response) {
-          // El servidor respondió con un código de error
-          errorMessage = e.response.data?.detail || e.response.data?.message || `Error ${e.response.status}: ${e.response.statusText}`;
+          console.error('Error de red en callback:', e);
         } else if (e.request) {
           // La petición se hizo pero no hubo respuesta
           errorMessage = 'No se recibió respuesta del servidor. Verifica que el backend esté corriendo.';
+          console.error('Error de conexión en callback:', e);
         } else {
           errorMessage = e.message || 'Error desconocido';
+          console.error('Error desconocido en callback:', e);
         }
         
         setError(errorMessage);

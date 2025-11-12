@@ -74,11 +74,25 @@ export default function AdminUsersPage() {
 
   const handleUpdateStatus = async (userEmail: string, newStatus: 'pending' | 'active' | 'revoked') => {
     try {
-      await authApi.updateUserStatus(userEmail, newStatus);
-      await loadUsers();
+      // Actualizar optimísticamente el estado en la UI
+      setUsers(prevUsers => 
+        prevUsers.map(user => 
+          user.email === userEmail 
+            ? { ...user, status: newStatus }
+            : user
+        )
+      );
       setActionMenuOpen(null);
+      
+      // Llamar al backend
+      await authApi.updateUserStatus(userEmail, newStatus);
+      
+      // Recargar usuarios para asegurar sincronización con el backend
+      await loadUsers();
     } catch (error) {
       console.error('Error actualizando estado:', error);
+      // Si hay error, recargar para mostrar el estado real del servidor
+      await loadUsers();
     }
   };
 
@@ -279,7 +293,7 @@ export default function AdminUsersPage() {
                                   {user.status === 'revoked' && (
                                     <>
                                       <button
-                                        onClick={() => handleUpdateStatus(user.email, 'pending')}
+                                        onClick={() => handleUpdateStatus(user.email, 'active')}
                                         className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
                                       >
                                         <RotateCcw className="w-4 h-4" />
