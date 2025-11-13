@@ -25,14 +25,25 @@ export function TicketCard({ ticket }: TicketCardProps) {
   const owner = safeText(ticket.owner || ticket.propietario || ticket.owner_name);
   const content = safeText(ticket.content || ticket.descripcion, '');
   const resolution = safeText(ticket.resolution || ticket.resolucion, '');
-  const ticketUrl = safeText(ticket.ticket_url);
 
-  // Create title
+  // 🔐 URL segura (solo http/https). Si es inválida, queda cadena vacía.
+  const ticketUrl = (() => {
+    const raw = ticket.ticket_url;
+    if (!raw || raw === 'N/A') return '';
+    try {
+      const u = new URL(raw);
+      return (u.protocol === 'http:' || u.protocol === 'https:') ? u.toString() : '';
+    } catch {
+      return '';
+    }
+  })();
+
+  // Title
   const title = `${ticketId} - ${subject.length > 80 ? subject.slice(0, 80) + '...' : subject}`;
 
   return (
     <div className="border border-gray-200 rounded-lg overflow-hidden">
-      {/* Header - Always visible */}
+      {/* Header */}
       <button
         onClick={() => setIsExpanded(!isExpanded)}
         className="w-full p-3 sm:p-4 text-left hover:bg-gray-50 transition-colors flex items-center justify-between"
@@ -55,30 +66,12 @@ export function TicketCard({ ticket }: TicketCardProps) {
             <div>
               <h5 className="font-semibold text-gray-900 mb-2 sm:mb-3 text-sm sm:text-base">Información Básica</h5>
               <div className="space-y-2 text-xs sm:text-sm">
-                <div>
-                  <span className="font-bold text-gray-700">ID:</span>
-                  <span className="ml-2 text-gray-900">{ticketId}</span>
-                </div>
-                <div>
-                  <span className="font-bold text-gray-700">Asunto:</span>
-                  <span className="ml-2 text-gray-900">{subject}</span>
-                </div>
-                <div>
-                  <span className="font-bold text-gray-700">Itinerario:</span>
-                  <span className="ml-2 text-gray-900">{itinerary}</span>
-                </div>
-                <div>
-                  <span className="font-bold text-gray-700">Prioridad:</span>
-                  <span className="ml-2 text-gray-900">{priority}</span>
-                </div>
-                <div>
-                  <span className="font-bold text-gray-700">Categoría:</span>
-                  <span className="ml-2 text-gray-900">{category}</span>
-                </div>
-                <div>
-                  <span className="font-bold text-gray-700">Estado:</span>
-                  <span className="ml-2 text-gray-900">{status}</span>
-                </div>
+                <div><span className="font-bold text-gray-700">ID:</span><span className="ml-2 text-gray-900">{ticketId}</span></div>
+                <div><span className="font-bold text-gray-700">Asunto:</span><span className="ml-2 text-gray-900">{subject}</span></div>
+                <div><span className="font-bold text-gray-700">Itinerario:</span><span className="ml-2 text-gray-900">{itinerary}</span></div>
+                <div><span className="font-bold text-gray-700">Prioridad:</span><span className="ml-2 text-gray-900">{priority}</span></div>
+                <div><span className="font-bold text-gray-700">Categoría:</span><span className="ml-2 text-gray-900">{category}</span></div>
+                <div><span className="font-bold text-gray-700">Estado:</span><span className="ml-2 text-gray-900">{status}</span></div>
               </div>
             </div>
 
@@ -86,22 +79,10 @@ export function TicketCard({ ticket }: TicketCardProps) {
             <div>
               <h5 className="font-semibold text-gray-900 mb-2 sm:mb-3 text-sm sm:text-base">Detalles Adicionales</h5>
               <div className="space-y-2 text-xs sm:text-sm">
-                <div>
-                  <span className="font-bold text-gray-700">Creado:</span>
-                  <span className="ml-2 text-gray-900">{createdDate}</span>
-                </div>
-                <div>
-                  <span className="font-bold text-gray-700">Cerrado:</span>
-                  <span className="ml-2 text-gray-900">{closedDate}</span>
-                </div>
-                <div>
-                  <span className="font-bold text-gray-700">Origen:</span>
-                  <span className="ml-2 text-gray-900">{source}</span>
-                </div>
-                <div>
-                  <span className="font-bold text-gray-700">Propietario:</span>
-                  <span className="ml-2 text-gray-900">{owner}</span>
-                </div>
+                <div><span className="font-bold text-gray-700">Creado:</span><span className="ml-2 text-gray-900">{createdDate}</span></div>
+                <div><span className="font-bold text-gray-700">Cerrado:</span><span className="ml-2 text-gray-900">{closedDate}</span></div>
+                <div><span className="font-bold text-gray-700">Origen:</span><span className="ml-2 text-gray-900">{source}</span></div>
+                <div><span className="font-bold text-gray-700">Propietario:</span><span className="ml-2 text-gray-900">{owner}</span></div>
               </div>
             </div>
           </div>
@@ -126,27 +107,24 @@ export function TicketCard({ ticket }: TicketCardProps) {
             </div>
           )}
 
-          {/* Ticket URL (enlace/acción) */}
-          {ticketUrl && ticketUrl !== 'N/A' && (
+          {/* Ticket URL (enlace seguro) */}
+          {ticketUrl ? (
             <div className="mt-3 sm:mt-4">
               <h5 className="font-semibold text-slate-900 mb-2 sm:mb-3 text-sm sm:text-base">Enlace al ticket en HubSpot</h5>
               <div className="bg-slate-100 border-l-4 border-slate-400 p-2 sm:p-3 rounded-r text-xs sm:text-sm text-blue-900 break-words">
                 <a
                   href={ticketUrl}
                   target="_blank"
-                  rel="noopener noreferrer"
+                  rel="noopener noreferrer nofollow"
                   className="underline underline-offset-2 hover:text-blue-700 break-all"
                 >
                   {ticketUrl}
                 </a>
               </div>
             </div>
-          )}
+          ) : null}
         </div>
       )}
     </div>
   );
 }
-
-
-

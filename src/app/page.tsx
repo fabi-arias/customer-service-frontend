@@ -15,11 +15,21 @@ export default function Home() {
   const { user, isLoading: isLoadingAuth } = useAuth();
 
   // Cognito configuration
-  const domain = process.env.NEXT_PUBLIC_COGNITO_DOMAIN || 'https://us-east-1wcnmdx46j.auth.us-east-1.amazoncognito.com';
-  const clientId = process.env.NEXT_PUBLIC_COGNITO_CLIENT_ID || '5n2ee26mn0o1bbem2v091gp4fp';
-  const redirect = encodeURIComponent(process.env.NEXT_PUBLIC_OAUTH_REDIRECT_URI || 'http://localhost:3000/login/callback');
-  const loginUrl = `${domain}/login?client_id=${clientId}&response_type=code&scope=email+openid+profile&redirect_uri=${redirect}&identity_provider=Google&prompt=select_account`;
-
+  const domain = process.env.NEXT_PUBLIC_COGNITO_DOMAIN;
+  const clientId = process.env.NEXT_PUBLIC_COGNITO_CLIENT_ID;
+  const redirect = process.env.NEXT_PUBLIC_OAUTH_REDIRECT_URI;
+  
+  if (!domain || !clientId || !redirect) {
+    console.error('Missing required authentication configuration');
+    return (
+      <div className="h-screen flex items-center justify-center">
+        <p className="text-red-600">Configuration error. Please contact support.</p>
+      </div>
+    );
+  }
+  
+  const loginUrl = `${domain}/login?client_id=${clientId}&response_type=code&scope=email+openid+profile&redirect_uri=${encodeURIComponent(redirect)}&identity_provider=Google&prompt=select_account`;
+  
   useEffect(() => {
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 768);

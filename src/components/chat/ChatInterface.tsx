@@ -61,11 +61,11 @@ export function ChatInterface({ onTemplateRequest, initialInput }: ChatInterface
   }, []);
 
   // Handle initial input
-  useEffect(() => {
-    if (initialInput) {
-      setInputMessage(initialInput);
-    }
-  }, [initialInput]);
+    useEffect(() => {
+      if (initialInput !== undefined) {
+        setInputMessage(initialInput);
+      }
+    }, [initialInput]);
 
   const sendMessage = async () => {
     if (!inputMessage.trim() || isLoading) return;

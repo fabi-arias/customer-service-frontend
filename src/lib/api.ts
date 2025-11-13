@@ -7,34 +7,38 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 30000, // 30 segundos de timeout (reducido de 2 minutos)
-  withCredentials: true, // Importante: permite enviar cookies HttpOnly
-  headers: {
-    'Content-Type': 'application/json',
-  },
+  timeout: 30000, // 30s
+  withCredentials: true, // Cookies HttpOnly
+  headers: { 'Content-Type': 'application/json' },
 });
+
+// Helper: detectar rutas de auth con precisión
+function isAuthRoute(pathname: string): boolean {
+  // normaliza sin trailing slashes extras
+  const p = pathname.replace(/\/+$/, '') || '/';
+  return (
+    p === '/login' ||
+    p.startsWith('/login/') ||
+    p === '/login/callback' ||
+    p.startsWith('/login/callback/')
+  );
+}
 
 // Interceptor para manejar errores 401 (No autorizado) globalmente
 api.interceptors.response.use(
   (response) => response,
   (error: AxiosError) => {
-    // Manejar errores 401 (Unauthorized) - Token expirado o inválido
     if (error.response?.status === 401) {
-      // Solo redirigir si no estamos ya en una página de login o callback
-      const currentPath = typeof window !== 'undefined' ? window.location.pathname : '';
-      const isAuthPage = currentPath.includes('/login') || currentPath.includes('/callback');
-      
-      if (!isAuthPage) {
-        // Limpiar cualquier estado de usuario almacenado localmente
-        // Nota: La cookie HttpOnly se maneja en el servidor, pero podemos
-        // disparar eventos para que los componentes sepan que la sesión expiró
-        if (typeof window !== 'undefined') {
-          // Disparar evento personalizado para notificar a los componentes
-          window.dispatchEvent(new CustomEvent('auth:unauthorized'));
-        }
+      const currentPath =
+        typeof window !== 'undefined' ? window.location.pathname : '';
+
+      const onAuthPage = typeof currentPath === 'string' && isAuthRoute(currentPath);
+
+      if (!onAuthPage && typeof window !== 'undefined') {
+        // Notifica a la app que la sesión expiró/invalidó
+        window.dispatchEvent(new CustomEvent('auth:unauthorized'));
       }
     }
-    
     return Promise.reject(error);
   }
 );
@@ -53,7 +57,6 @@ export const agentApi = {
     const response = await api.get('/api/agent/info');
     return response.data;
   },
-
   testConnection: async (): Promise<ConnectionTest> => {
     const response = await api.post('/api/agent/test-connection');
     return response.data;
@@ -66,7 +69,6 @@ export const databaseApi = {
     const response = await api.get('/api/database/health');
     return response.data;
   },
-
   getStats: async (): Promise<DatabaseStats> => {
     const response = await api.get('/api/database/stats');
     return response.data;
@@ -79,7 +81,6 @@ export const systemApi = {
     const response = await api.get('/health');
     return response.data;
   },
-
   getInfo: async (): Promise<{ message: string; version: string; status: string }> => {
     const response = await api.get('/');
     return response.data;
@@ -90,9 +91,7 @@ export const systemApi = {
 export const authApi = {
   exchange: async (code: string): Promise<{ ok: boolean; email?: string }> => {
     const response = await api.post('/auth/exchange', new URLSearchParams({ code }), {
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     });
     return response.data;
   },
@@ -119,12 +118,13 @@ export const authApi = {
     return response.data;
   },
 
+  // 🔐 Token en el BODY (no en query) para evitar fuga en logs/referrers
   accept: async (token: string): Promise<{
     ok: boolean;
     email: string;
     message: string;
   }> => {
-    const response = await api.post(`/auth/accept?token=${encodeURIComponent(token)}`);
+    const response = await api.post('/auth/accept', { token });
     return response.data;
   },
 
@@ -167,6 +167,3 @@ export const authApi = {
 };
 
 export default api;
-
-
-

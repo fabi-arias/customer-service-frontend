@@ -2,7 +2,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useSearchParams, useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import api from '@/lib/api';
 import { Loader2 } from 'lucide-react';
 
@@ -12,32 +12,38 @@ const redirect = encodeURIComponent(process.env.NEXT_PUBLIC_OAUTH_REDIRECT_URI |
 const loginUrl = `${domain}/login?client_id=${clientId}&response_type=code&scope=email+openid+profile&redirect_uri=${redirect}&identity_provider=Google&prompt=select_account`;
 
 export default function AcceptInvitePage() {
-  const sp = useSearchParams();
   const router = useRouter();
   const [msg, setMsg] = useState('Activando invitación...');
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const token = sp.get('token');
+    const token = typeof window !== 'undefined'
+      ? new URL(window.location.href).searchParams.get('token')
+      : null;
+
     if (!token) {
       setError('Token faltante en la URL');
       setIsLoading(false);
       return;
     }
 
+    // 🔒 Limpia la URL ANTES del request para evitar referrer leakage
+    if (typeof window !== 'undefined') {
+      window.history.replaceState({}, '', window.location.pathname);
+    }
+
     (async () => {
       try {
         setMsg('Validando token de invitación...');
-        const { data } = await api.post(`/auth/accept?token=${encodeURIComponent(token)}`);
+        // ⬇️ Enviar en el BODY, no en la query
+        const { data } = await api.post('/auth/accept', { token });
         if (data?.ok) {
           setMsg('Invitación activada correctamente. Redirigiendo al login...');
           setIsLoading(false);
-          setTimeout(() => {
-            window.location.href = loginUrl;
-          }, 1200);
+          setTimeout(() => { window.location.href = loginUrl; }, 1200);
         } else {
-          setError('No se pudo activar la invitación.');
+          setError(data?.detail || 'No se pudo activar la invitación.');
           setIsLoading(false);
         }
       } catch (e: any) {
@@ -47,14 +53,13 @@ export default function AcceptInvitePage() {
         setIsLoading(false);
       }
     })();
-  }, [sp]);
+  }, []);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
       <div className="bg-white p-8 rounded-lg shadow-md max-w-md w-full mx-4">
         {isLoading ? (
           <div className="flex flex-col items-center space-y-4">
-            {/* Loader con color de marca */}
             <Loader2 className="w-8 h-8 animate-spin" style={{ color: '#00A9E0' }} />
             <p className="text-gray-700">{msg}</p>
           </div>
@@ -78,7 +83,7 @@ export default function AcceptInvitePage() {
             <button
               onClick={() => router.push('/')}
               className="mt-4 w-full px-4 py-2 text-white rounded hover:opacity-90 transition-colors"
-              style={{ backgroundColor: '#00A9E0' }}  // antes bg-blue-600
+              style={{ backgroundColor: '#00A9E0' }}
             >
               Volver al inicio
             </button>
@@ -89,13 +94,8 @@ export default function AcceptInvitePage() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
             </svg>
             <p className="text-gray-700 text-center">{msg}</p>
-
-            {/* Barra de progreso con color de marca */}
             <div className="w-full bg-gray-200 rounded-full h-2">
-              <div
-                className="h-2 rounded-full animate-pulse"
-                style={{ width: '100%', backgroundColor: '#00A9E0' }} // antes bg-blue-600
-              />
+              <div className="h-2 rounded-full animate-pulse" style={{ width: '100%', backgroundColor: '#00A9E0' }} />
             </div>
           </div>
         )}

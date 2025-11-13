@@ -1,7 +1,7 @@
 // src/app/metrics/page.tsx
 "use client";
 import { useEffect, useState } from "react";
-import MessageVisual from "@/components/chat/MessageVisual";
+import { MessageVisual } from "@/components/chat/MessageVisual";
 import { BigNumberCard } from "@/components/chat/BigNumberCard";
 import { BarChartCard } from "@/components/chat/BarChartCard";
 import { LineChartCard } from "@/components/chat/LineChartCard";

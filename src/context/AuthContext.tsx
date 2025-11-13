@@ -1,3 +1,4 @@
+// src/context/AuthContext.tsx
 'use client';
 
 import { createContext, useContext, useEffect, useMemo, useState } from 'react';
@@ -19,32 +20,51 @@ const Ctx = createContext<AuthState>({
 });
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  // 1) Estado inicial consistente entre servidor y cliente
   const [user, setUser] = useState<AuthUser>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // 2) Cargar cache solo en el cliente después del mount
+  // 1) Carga inicial + revalidación en background (con catch)
   useEffect(() => {
     const cached = loadCachedUser();
     if (cached?.user) {
       setUser(cached.user);
       setIsLoading(false);
-      // Revalidar en background sin bloquear
-      getUserCached().then(setUser);
+      getUserCached()
+        .then(setUser)
+        .catch((err) => {
+          console.error('Auth bootstrap revalidate failed:', err);
+          // opcional: window.dispatchEvent(new CustomEvent('auth:error', { detail: 'No se pudo refrescar la sesión' }));
+        });
     } else {
-      getUserCached().then((u) => {
-        setUser(u);
-        setIsLoading(false);
-      });
+      getUserCached()
+        .then((u) => {
+          setUser(u);
+        })
+        .catch((err) => {
+          console.error('Auth bootstrap failed:', err);
+          setUser(null);
+        })
+        .finally(() => setIsLoading(false));
     }
   }, []);
 
-  // 3) listeners globales (ya emites estos eventos)
+  // 2) Listeners globales con try/catch en onLogin
   useEffect(() => {
     const onLogin = async () => {
-      const u = await authApi.me();
-      setUser(u);
-      setUserFromEvent(u);
+      try {
+        const u = await authApi.me();
+        setUser(u);
+        setUserFromEvent(u);
+      } catch (error) {
+        console.error('Failed to refresh user after login:', error);
+        // Mantener estado consistente: limpiar usuario si el refresh falla
+        setUser(null);
+        clearUser();
+        // Notificar a la app si querés mostrar un toast/banner
+        window.dispatchEvent(
+          new CustomEvent('auth:error', { detail: 'No se pudo cargar el perfil de usuario' })
+        );
+      }
     };
 
     const onUnauthorized = () => { 
@@ -65,7 +85,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const groups = user?.groups ?? [];
     const isSupervisor = groups.includes('Supervisor');
     const isAgent = groups.includes('Agent') || isSupervisor;
-
     return { user, isSupervisor, isAgent, isLoading };
   }, [user, isLoading]);
 
@@ -75,4 +94,3 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 export function useAuth() {
   return useContext(Ctx);
 }
-
