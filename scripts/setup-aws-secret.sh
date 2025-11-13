@@ -1,4 +1,5 @@
 #!/bin/bash
+set -euo pipefail
 
 # Script para crear el secret en AWS Secrets Manager
 # Este script debe ejecutarse una sola vez para configurar el secret inicial
@@ -19,7 +20,7 @@ if ! command -v aws &> /dev/null; then
 fi
 
 # Verificar credenciales
-if ! aws sts get-caller-identity &> /dev/null; then
+if ! aws sts get-caller-identity --region "$AWS_REGION" &> /dev/null; then
     echo "❌ Error: No se encontraron credenciales válidas de AWS"
     echo "   Ejecuta: aws configure"
     exit 1
@@ -28,27 +29,41 @@ fi
 echo "✅ Credenciales AWS verificadas"
 echo ""
 
-# Crear el contenido del secret
-cat > /tmp/secret.json <<EOF
+# Crear archivo temporal seguro (rw-------)
+make_temp() {
+  local t
+  t=$(mktemp 2>/dev/null || mktemp -t secret) || return 1
+  chmod 600 "$t" || return 1
+  echo "$t"
+}
+TEMP_FILE=$(make_temp) || { echo "❌ No se pudo crear archivo temporal"; exit 1; }
+trap 'rm -f "$TEMP_FILE"' EXIT
+
+# Crear el contenido del secret (por defecto)
+cat > "$TEMP_FILE" <<EOF
 {
   "NEXT_PUBLIC_API_URL": "http://localhost:8000"
 }
 EOF
 
 echo "📝 Contenido del secret (por defecto):"
-cat /tmp/secret.json
+if command -v jq &> /dev/null; then
+  jq . < "$TEMP_FILE"
+else
+  cat "$TEMP_FILE"
+fi
 echo ""
-echo "⚠️  Puedes editar /tmp/secret.json antes de continuar para personalizar los valores"
+echo "⚠️  Puedes editar $TEMP_FILE antes de continuar para personalizar los valores"
 echo ""
 read -p "¿Deseas continuar con estos valores? (y/n): " -n 1 -r
 echo ""
 
 if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-    echo "Edita /tmp/secret.json y ejecuta:"
+    echo "Edita $TEMP_FILE y ejecuta:"
     echo "  aws secretsmanager create-secret \\"
     echo "    --name $SECRET_ID \\"
     echo "    --description \"Variables de entorno para el frontend\" \\"
-    echo "    --secret-string file:///tmp/secret.json \\"
+    echo "    --secret-string file://$TEMP_FILE \\"
     echo "    --region $AWS_REGION"
     exit 0
 fi
@@ -59,7 +74,7 @@ echo "Creando secret en AWS..."
 if aws secretsmanager create-secret \
     --name "$SECRET_ID" \
     --description "Variables de entorno para el frontend" \
-    --secret-string file:///tmp/secret.json \
+    --secret-string file://"$TEMP_FILE" \
     --region "$AWS_REGION" 2>&1; then
     
     echo ""
@@ -77,11 +92,7 @@ else
     echo "Si el secret ya existe, puedes actualizarlo con:"
     echo "  aws secretsmanager update-secret \\"
     echo "    --secret-id $SECRET_ID \\"
-    echo "    --secret-string file:///tmp/secret.json \\"
+    echo "    --secret-string file://$TEMP_FILE \\"
     echo "    --region $AWS_REGION"
     echo ""
 fi
-
-# Limpiar archivo temporal
-rm -f /tmp/secret.json
-

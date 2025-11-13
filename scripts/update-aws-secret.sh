@@ -1,4 +1,5 @@
 #!/bin/bash
+set -euo pipefail
 
 # Script para actualizar un secret existente en AWS Secrets Manager
 
@@ -17,10 +18,23 @@ if ! command -v aws &> /dev/null; then
 fi
 
 # Verificar credenciales
-if ! aws sts get-caller-identity &> /dev/null; then
+if ! aws sts get-caller-identity --region "$AWS_REGION" &> /dev/null; then
     echo "❌ Error: No se encontraron credenciales válidas de AWS"
     exit 1
 fi
+
+# Crear archivos temporales con permisos restrictivos (rw-------)
+make_temp() {
+  # Compatibilidad macOS/GNU
+  local t
+  t=$(mktemp 2>/dev/null || mktemp -t secret) || return 1
+  chmod 600 "$t" || return 1
+  echo "$t"
+}
+
+TEMP_CURRENT=$(make_temp) || { echo "❌ No se pudo crear archivo temporal"; exit 1; }
+TEMP_NEW=$(make_temp) || { echo "❌ No se pudo crear archivo temporal"; exit 1; }
+trap 'rm -f "$TEMP_CURRENT" "$TEMP_NEW"' EXIT
 
 # Obtener el secret actual
 echo "📥 Obteniendo valores actuales del secret..."
@@ -28,27 +42,27 @@ aws secretsmanager get-secret-value \
     --secret-id "$SECRET_ID" \
     --region "$AWS_REGION" \
     --query 'SecretString' \
-    --output text > /tmp/secret-current.json
-
-if [ $? -ne 0 ]; then
-    echo "❌ Error: No se pudo obtener el secret actual"
-    exit 1
-fi
+    --output text > "$TEMP_CURRENT"
 
 echo "📝 Valores actuales:"
-cat /tmp/secret-current.json | jq .
+if command -v jq &> /dev/null; then
+  jq . < "$TEMP_CURRENT"
+else
+  echo "⚠️  'jq' no está instalado; mostrando contenido plano:"
+  cat "$TEMP_CURRENT"
+fi
 echo ""
 
 # Crear archivo temporal para editar
-cp /tmp/secret-current.json /tmp/secret-new.json
+cp "$TEMP_CURRENT" "$TEMP_NEW"
 
-echo "✏️  Edita el archivo /tmp/secret-new.json con tus nuevos valores"
-echo "   (Presiona Enter cuando hayas terminado de editar)"
-read -p ""
+echo "✏️  Edita el archivo $TEMP_NEW con tus nuevos valores"
+echo "   (Presiona Enter para continuar y abrir el editor si está configurado)"
+read -r _
 
 # Si el usuario tiene un editor configurado, abrirlo
-if [ -n "$EDITOR" ]; then
-    $EDITOR /tmp/secret-new.json
+if [ -n "${EDITOR:-}" ]; then
+    "$EDITOR" "$TEMP_NEW"
 else
     echo "💡 Tip: Configura la variable EDITOR para editar automáticamente"
     echo "   export EDITOR=nano  # o vim, code, etc."
@@ -56,7 +70,12 @@ fi
 
 echo ""
 echo "📝 Nuevos valores:"
-cat /tmp/secret-new.json | jq .
+if command -v jq &> /dev/null; then
+  jq . < "$TEMP_NEW"
+else
+  echo "⚠️  'jq' no está instalado; mostrando contenido plano:"
+  cat "$TEMP_NEW"
+fi
 echo ""
 
 read -p "¿Actualizar el secret con estos valores? (y/n): " -n 1 -r
@@ -64,7 +83,6 @@ echo ""
 
 if [[ ! $REPLY =~ ^[Yy]$ ]]; then
     echo "❌ Operación cancelada"
-    rm -f /tmp/secret-current.json /tmp/secret-new.json
     exit 0
 fi
 
@@ -72,7 +90,7 @@ fi
 echo "📤 Actualizando secret..."
 if aws secretsmanager update-secret \
     --secret-id "$SECRET_ID" \
-    --secret-string file:///tmp/secret-new.json \
+    --secret-string file://"$TEMP_NEW" \
     --region "$AWS_REGION" > /dev/null; then
     
     echo "✅ Secret actualizado exitosamente!"
@@ -82,8 +100,5 @@ if aws secretsmanager update-secret \
     echo ""
 else
     echo "❌ Error al actualizar el secret"
+    exit 1
 fi
-
-# Limpiar archivos temporales
-rm -f /tmp/secret-current.json /tmp/secret-new.json
-

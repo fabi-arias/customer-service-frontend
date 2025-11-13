@@ -26,23 +26,30 @@ export const config = {
 
 /**
  * Helper para obtener variables de entorno con validación
+ * - Lanza error si la variable no existe (undefined).
+ * - Respeta valores vacíos intencionales (cadena vacía '').
+ * - Usa defaultValue solo si se proporciona explícitamente.
  */
 export function getEnvVar(key: string, defaultValue?: string): string {
   const value = process.env[key];
-  
-  if (!value && !defaultValue) {
-    if (process.env.NODE_ENV === 'production') {
-      throw new Error(`Variable de entorno requerida no encontrada: ${key}`);
+
+  if (value === undefined) {
+    if (defaultValue !== undefined) {
+      return defaultValue;
     }
-    console.warn(`⚠️ Variable de entorno no encontrada: ${key}`);
-    return '';
+    // Lanzar también en desarrollo para detectar fallos temprano
+    throw new Error(
+      `Variable de entorno requerida no encontrada: ${key}. ` +
+      `Considera definirla o proveer un defaultValue.`
+    );
   }
-  
-  return value || defaultValue || '';
+
+  return value; // puede ser '', y eso es válido
 }
 
 /**
  * Helper para obtener variables públicas de Next.js
+ * - Advierte si la clave no inicia con NEXT_PUBLIC_ (no estará disponible en el cliente).
  */
 export function getPublicEnvVar(key: string, defaultValue?: string): string {
   if (!key.startsWith('NEXT_PUBLIC_')) {
@@ -52,4 +59,3 @@ export function getPublicEnvVar(key: string, defaultValue?: string): string {
 }
 
 export default config;
-
