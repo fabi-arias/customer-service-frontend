@@ -1,13 +1,13 @@
 // src/app/login/callback/page.tsx
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import Image from 'next/image';
 import api from '@/lib/api';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Loader2, AlertCircle, CheckCircle } from 'lucide-react';
 
-export default function Callback() {
+function CallbackContent() {
   const router = useRouter();
   const sp = useSearchParams();
   const [msg, setMsg] = useState('Procesando inicio de sesión...');
@@ -229,6 +229,32 @@ export default function Callback() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function Callback() {
+  return (
+    <Suspense fallback={
+      <div
+        className="min-h-screen grid place-items-center p-4"
+        style={{
+          background:
+            'radial-gradient(circle at center, #01a9e0 0%, #d9f2fa 50%, white 100%)',
+        }}
+      >
+        <div
+          className="relative w-full max-w-md rounded-3xl bg-white shadow-xl px-10 py-12 sm:py-20 md:py-30 flex flex-col items-center justify-center"
+          style={{ fontFamily: 'var(--font-figtree), sans-serif' }}
+        >
+          <div className="flex flex-col items-center space-y-4">
+            <Loader2 className="w-12 h-12 animate-spin" style={{ color: '#00A9E0' }} />
+            <p className="text-base text-gray-600">Cargando...</p>
+          </div>
+        </div>
+      </div>
+    }>
+      <CallbackContent />
+    </Suspense>
   );
 }
 
