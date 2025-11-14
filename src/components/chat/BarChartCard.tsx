@@ -11,8 +11,8 @@ import {
   Label,
 } from "recharts";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 interface BarChartCardProps {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   payload: any;
 }
 
@@ -48,7 +48,12 @@ function buildCategoryColor(
   return map;
 }
 
-const YCenteredLabel = ({ viewBox, value }: any) => {
+interface YCenteredLabelProps {
+  viewBox: { x: number; y: number; height: number };
+  value: string;
+}
+
+const YCenteredLabel = ({ viewBox, value }: YCenteredLabelProps) => {
     const padding = 12;
     const cx = viewBox.x + padding; 
     const cy = viewBox.y + viewBox.height / 2;
@@ -96,13 +101,13 @@ export function BarChartCard({ payload }: BarChartCardProps) {
   const dynamicWidth = Math.min(800, Math.max(440, 50 + dataLength * 8));
 
   // === Ajuste DINÁMICO del ancho del YAxis según el label más largo ===
-  const yLabels = sortedData.map((d: any) => String(d[yField] ?? ""));
+  const yLabels = sortedData.map((d: Record<string, unknown>) => String(d[yField] ?? ""));
   const yAxisWidth = calcYAxisWidth(yLabels, 120, 24);
 
   // === Colores por categoría (estable) ===
   const keyForColorField = colorField || yField;
   const categories: string[] = Array.from(
-    new Set(sortedData.map((d: any) => String(d[keyForColorField])))
+    new Set(sortedData.map((d: Record<string, unknown>) => String(d[keyForColorField])))
   );
   const categoryColor = buildCategoryColor(categories, COLORS);
 
@@ -146,12 +151,18 @@ export function BarChartCard({ payload }: BarChartCardProps) {
             tickFormatter={(v: string) => (v ? String(v).replace(/ /g, "\u00A0") : v)}
           >
             {/* Label del eje Y 100% centrado verticalmente */}
-            <Label content={<YCenteredLabel value={yTitle} />} />
+            <Label content={(props) => {
+              const viewBox = props.viewBox as { x?: number; y?: number; height?: number; width?: number } | undefined;
+              if (viewBox && typeof viewBox.x === 'number' && typeof viewBox.y === 'number' && typeof viewBox.height === 'number') {
+                return <YCenteredLabel viewBox={{ x: viewBox.x, y: viewBox.y, height: viewBox.height }} value={yTitle} />;
+              }
+              return null;
+            }} />
           </YAxis>
 
           <Tooltip
             formatter={(value: number) => [`${value}`, xTitle]}
-            labelFormatter={(label: any) => `${yTitle}: ${label}`}
+            labelFormatter={(label: string | number) => `${yTitle}: ${label}`}
             contentStyle={{
               backgroundColor: "#fff",
               border: "1px solid #e0e0e0",
@@ -162,7 +173,7 @@ export function BarChartCard({ payload }: BarChartCardProps) {
 
           {/* Barras cuadradas + colores por categoría */}
           <Bar dataKey={xField} radius={0}>
-            {sortedData.map((entry: any, index: number) => {
+            {sortedData.map((entry: Record<string, unknown>, index: number) => {
               const key = String(entry[keyForColorField]);
               const fill = categoryColor.get(key) ?? COLORS[index % COLORS.length];
               return <Cell key={`cell-${index}`} fill={fill} />;

@@ -46,9 +46,13 @@ export default function AcceptInvitePage() {
           setError(data?.detail || 'No se pudo activar la invitación.');
           setIsLoading(false);
         }
-      } catch (e: any) {
+      } catch (e: unknown) {
         console.error('Error aceptando invitación:', e);
-        const errorMsg = e?.response?.data?.detail || e?.response?.data?.message || e?.message || 'Error desconocido';
+        let errorMsg = 'Error desconocido';
+        if (e && typeof e === 'object') {
+          const errorObj = e as { response?: { data?: { detail?: string; message?: string } }; message?: string };
+          errorMsg = errorObj?.response?.data?.detail || errorObj?.response?.data?.message || errorObj?.message || 'Error desconocido';
+        }
         setError(errorMsg);
         setIsLoading(false);
       }

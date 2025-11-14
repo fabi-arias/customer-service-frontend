@@ -1,6 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { AlertCircle } from 'lucide-react';
 
 export default function AccessDeniedPage() {
@@ -25,9 +26,11 @@ export default function AccessDeniedPage() {
         {/* Contenedor principal del contenido */}
         <div className="flex flex-col items-center text-center space-y-8">
           {/* Logo principal */}
-          <img
+          <Image
             src="/logo-spot3x.png"
             alt="Spot"
+            width={200}
+            height={60}
             className="h-18 w-auto"
           />
 
@@ -100,9 +103,11 @@ export default function AccessDeniedPage() {
         {/* Impulsado por Muscle (al fondo) */}
         <div className="absolute bottom-6 left-0 right-0 flex items-center justify-center gap-2 opacity-70">
           <span className="text-sm text-gray-400">Impulsado por</span>
-          <img
+          <Image
             src="/logo-muscle.png"
             alt="Muscle logo"
+            width={60}
+            height={16}
             className="h-4 w-auto"
           />
         </div>

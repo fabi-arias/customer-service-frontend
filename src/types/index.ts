@@ -92,10 +92,15 @@ export interface Contact {
   owner_name?: string;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type ChartData = any;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type BigNumberData = any;
+
 export type OrderedElement = 
   | { type: 'text'; content: string }
-  | { type: 'chart'; data: any }
-  | { type: 'bigNumber'; data: any }
+  | { type: 'chart'; data: ChartData }
+  | { type: 'bigNumber'; data: BigNumberData }
   | { type: 'ticket'; data: Ticket }
   | { type: 'contact'; data: Contact };
 

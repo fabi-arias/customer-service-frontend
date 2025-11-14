@@ -12,7 +12,7 @@ interface ChatInterfaceProps {
   initialInput?: string;
 }
 
-export function ChatInterface({ onTemplateRequest, initialInput }: ChatInterfaceProps) {
+export function ChatInterface({ initialInput }: ChatInterfaceProps) {
   const [messages, setMessages] = useState<ChatMessageType[]>([]);
   const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);

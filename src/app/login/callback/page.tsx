@@ -2,6 +2,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Image from 'next/image';
 import api from '@/lib/api';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Loader2, AlertCircle, CheckCircle } from 'lucide-react';
@@ -60,14 +61,15 @@ export default function Callback() {
           setError('No se pudo iniciar sesión: respuesta inesperada');
           setIsLoading(false);
         }
-      } catch (e: any) {
+      } catch (e: unknown) {
         let errorMessage = 'Error desconocido';
         let isExpectedError = false;
         
-        if (e.response) {
+        if (e && typeof e === 'object' && 'response' in e) {
+          const errorResponse = e as { response?: { status?: number; statusText?: string; data?: { detail?: string; message?: string } } };
           // El servidor respondió con un código de error
-          const status = e.response.status;
-          const detail = e.response.data?.detail || e.response.data?.message;
+          const status = errorResponse.response?.status;
+          const detail = errorResponse.response?.data?.detail || errorResponse.response?.data?.message;
           
           if (status === 403 && detail) {
             // Error 403: es un error esperado (usuario revocado, no invitado, etc.)
@@ -80,22 +82,25 @@ export default function Callback() {
             isExpectedError = true;
           } else {
             // Otros errores del servidor (500, etc.) - estos sí son errores del sistema
-            errorMessage = detail || `Error ${status}: ${e.response.statusText}`;
+            errorMessage = detail || `Error ${status}: ${errorResponse.response?.statusText || 'Unknown'}`;
             if (!isExpectedError) {
               console.error('Error inesperado en callback:', e);
             }
           }
-        } else if (e.code === 'ECONNABORTED' || e.message?.includes('timeout')) {
-          errorMessage = 'El servidor tardó demasiado en responder. Verifica que el backend esté corriendo.';
-          console.error('Error de timeout en callback:', e);
-        } else if (e.code === 'ERR_NETWORK' || e.message?.includes('Network Error')) {
-          errorMessage = 'Error de conexión. Verifica que el backend esté corriendo en http://localhost:8000';
-          console.error('Error de red en callback:', e);
-        } else if (e.request) {
+        } else if (e && typeof e === 'object' && 'code' in e) {
+          const errorWithCode = e as { code?: string; message?: string };
+          if (errorWithCode.code === 'ECONNABORTED' || errorWithCode.message?.includes('timeout')) {
+            errorMessage = 'El servidor tardó demasiado en responder. Verifica que el backend esté corriendo.';
+            console.error('Error de timeout en callback:', e);
+          } else if (errorWithCode.code === 'ERR_NETWORK' || errorWithCode.message?.includes('Network Error')) {
+            errorMessage = 'Error de conexión. Verifica que el backend esté corriendo en http://localhost:8000';
+            console.error('Error de red en callback:', e);
+          }
+        } else if (e && typeof e === 'object' && 'request' in e) {
           // La petición se hizo pero no hubo respuesta
           errorMessage = 'No se recibió respuesta del servidor. Verifica que el backend esté corriendo.';
           console.error('Error de conexión en callback:', e);
-        } else {
+        } else if (e instanceof Error) {
           errorMessage = e.message || 'Error desconocido';
           console.error('Error desconocido en callback:', e);
         }
@@ -125,9 +130,11 @@ export default function Callback() {
         {/* Contenedor principal del contenido */}
         <div className="flex flex-col items-center text-center space-y-8">
           {/* Logo principal */}
-          <img
+          <Image
             src="/logo-spot3x.png"
             alt="Spot"
+            width={200}
+            height={60}
             className="h-18 w-auto"
           />
 
@@ -212,9 +219,11 @@ export default function Callback() {
         {/* Impulsado por Muscle (al fondo) */}
         <div className="absolute bottom-6 left-0 right-0 flex items-center justify-center gap-2 opacity-70">
           <span className="text-sm text-gray-400">Impulsado por</span>
-          <img
+          <Image
             src="/logo-muscle.png"
             alt="Muscle logo"
+            width={60}
+            height={16}
             className="h-4 w-auto"
           />
         </div>

@@ -38,8 +38,13 @@ export function InviteModal({ isOpen, onClose, onInviteSuccess }: InviteModalPro
       setInviteUrl(result.invite_url);
       setEmailSent(result.email_sent || false);
       onInviteSuccess?.();
-    } catch (e: any) {
-      setError(e?.response?.data?.detail || e?.message || 'Error al enviar invitación');
+    } catch (e: unknown) {
+      let errorMessage = 'Error al enviar invitación';
+      if (e && typeof e === 'object') {
+        const errorObj = e as { response?: { data?: { detail?: string } }; message?: string };
+        errorMessage = errorObj?.response?.data?.detail || errorObj?.message || 'Error al enviar invitación';
+      }
+      setError(errorMessage);
     } finally {
       setIsSubmitting(false);
     }
