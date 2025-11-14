@@ -2,6 +2,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { Header } from '@/components/ui/Header';
 import { Sidebar } from '@/components/sidebar/Sidebar';
 import { ChatInterface } from '@/components/chat/ChatInterface';
@@ -124,9 +125,11 @@ export default function Home() {
           style={{ fontFamily: 'var(--font-figtree), sans-serif' }}
         >
           <div className="flex flex-col items-center text-center space-y-8">
-            <img
+            <Image
               src="/logo-spot3x.png"
               alt="Spot"
+              width={200}
+              height={60}
               className="h-18 w-auto"
             />
 
