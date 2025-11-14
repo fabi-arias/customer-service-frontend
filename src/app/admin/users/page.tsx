@@ -178,9 +178,11 @@ export default function Home() {
 
           <div className="absolute bottom-6 left-0 right-0 flex items-center justify-center gap-2 opacity-70">
             <span className="text-sm text-gray-400">Impulsado por</span>
-            <img
+            <Image
               src="/logo-muscle.png"
               alt="Muscle logo"
+              width={60}
+              height={16}
               className="h-4 w-auto"
             />
           </div>

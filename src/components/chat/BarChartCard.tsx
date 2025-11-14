@@ -13,6 +13,7 @@ import {
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 interface BarChartCardProps {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   payload: any;
 }
 
