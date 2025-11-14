@@ -151,7 +151,13 @@ export function BarChartCard({ payload }: BarChartCardProps) {
             tickFormatter={(v: string) => (v ? String(v).replace(/ /g, "\u00A0") : v)}
           >
             {/* Label del eje Y 100% centrado verticalmente */}
-            <Label content={<YCenteredLabel value={yTitle} />} />
+            <Label content={(props) => {
+              const viewBox = props.viewBox as { x?: number; y?: number; height?: number; width?: number } | undefined;
+              if (viewBox && typeof viewBox.x === 'number' && typeof viewBox.y === 'number' && typeof viewBox.height === 'number') {
+                return <YCenteredLabel viewBox={{ x: viewBox.x, y: viewBox.y, height: viewBox.height }} value={yTitle} />;
+              }
+              return null;
+            }} />
           </YAxis>
 
           <Tooltip

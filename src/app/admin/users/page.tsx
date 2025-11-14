@@ -1,405 +1,224 @@
-// src/app/admin/users/page.tsx
+// src/app/page.tsx
 'use client';
 
-import { useState, useEffect, useCallback, MouseEvent } from 'react';
-import { useRouter } from 'next/navigation';
-import { authApi } from '@/lib/api';
-import { useAuth } from '@/context/AuthContext';
-import { ArrowLeft, Loader2, UserPlus, MoreVertical, Copy, RotateCcw, Ban, CheckCircle, RefreshCw } from 'lucide-react';
-import { InviteModal } from '@/components/ui/InviteModal';
+import { useState, useEffect } from 'react';
 import { Header } from '@/components/ui/Header';
+import { Sidebar } from '@/components/sidebar/Sidebar';
+import { ChatInterface } from '@/components/chat/ChatInterface';
+import { useAuth } from '@/context/AuthContext';
+import { Loader2 } from 'lucide-react';
 
-interface InvitedUser {
-  email: string;
-  role: string;
-  status: string;
-  invited_by: string;
-  token_expires_at: string | null;
-  created_at: string;
-  updated_at: string;
-}
+export default function Home() {
+  const [chatKey, setChatKey] = useState(0);
+  const [sidebarVisible, setSidebarVisible] = useState(true);
+  const [isMobile, setIsMobile] = useState(false);
+  const { user, isLoading: isLoadingAuth } = useAuth();
 
-type MenuPosition = { top: number; left: number } | null;
-
-export default function AdminUsersPage() {
-  const router = useRouter();
-  const { user, isLoading } = useAuth();
-  const [users, setUsers] = useState<InvitedUser[]>([]);
-  const [isLoadingUsers, setIsLoadingUsers] = useState(true);
-  const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
-  const [, setSelectedUser] = useState<InvitedUser | null>(null);
-  const [actionMenuOpen, setActionMenuOpen] = useState<string | null>(null);
-  const [copiedEmail, setCopiedEmail] = useState<string | null>(null);
-  const [menuPos, setMenuPos] = useState<MenuPosition>(null);
-
-  // Verificar que sea Supervisor
-  useEffect(() => {
-    if (!isLoading && user) {
-      const groups = user.groups ?? [];
-      if (!groups.includes('Supervisor')) {
-        router.push('/access-denied');
-      }
-    } else if (!isLoading && !user) {
-      router.push('/access-denied');
-    }
-  }, [user, isLoading, router]);
-
-  const loadUsers = useCallback(async () => {
-    const groups = user?.groups ?? [];
-    if (groups.includes('Supervisor')) {
-      try {
-        setIsLoadingUsers(true);
-        const result = await authApi.listUsers();
-        setUsers(result.users);
-      } catch (error) {
-        console.error('Error cargando usuarios:', error);
-      } finally {
-        setIsLoadingUsers(false);
-      }
-    }
-  }, [user]);
+  // Solo mostrar loading en el cliente para evitar hydration mismatch
+  const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
-    loadUsers();
-  }, [loadUsers]);
+    setIsMounted(true);
+  }, []);
 
-  // Cerrar menú en scroll/resize (evita desalineo si el usuario se mueve)
   useEffect(() => {
-    const closeOnScrollOrResize = () => {
-      if (actionMenuOpen) {
-        setActionMenuOpen(null);
-        setMenuPos(null);
+    const checkMobile = () => {
+      if (typeof window !== 'undefined') {
+        setIsMobile(window.innerWidth < 768);
       }
     };
-    window.addEventListener('scroll', closeOnScrollOrResize, { passive: true });
-    window.addEventListener('resize', closeOnScrollOrResize);
+
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+
     return () => {
-      window.removeEventListener('scroll', closeOnScrollOrResize);
-      window.removeEventListener('resize', closeOnScrollOrResize);
+      window.removeEventListener('resize', checkMobile);
     };
-  }, [actionMenuOpen]);
+  }, []);
 
-  // Posicionar el menú respecto al botón (coordenadas de viewport; NO sumar scroll)
-  const openMenuAtButton = (e: MouseEvent<HTMLButtonElement>, email: string) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    const MENU_WIDTH = 240;
-    const MENU_ESTIMATED_HEIGHT = 160;
-    const GAP = 8;
+  // 🔐 Configuración Cognito DESPUÉS de los hooks
+  const domain = process.env.NEXT_PUBLIC_COGNITO_DOMAIN;
+  const clientId = process.env.NEXT_PUBLIC_COGNITO_CLIENT_ID;
+  const redirect = process.env.NEXT_PUBLIC_OAUTH_REDIRECT_URI;
 
-    const canOpenDown = rect.bottom + GAP + MENU_ESTIMATED_HEIGHT <= window.innerHeight;
-    const top = (canOpenDown ? rect.bottom + GAP : rect.top - MENU_ESTIMATED_HEIGHT - GAP);
-    const left = Math.max(
-      8,
-      Math.min(rect.right - MENU_WIDTH, window.innerWidth - MENU_WIDTH - 8)
-    );
-
-    setActionMenuOpen(prev => (prev === email ? null : email));
-    setMenuPos({ top, left });
-  };
-
-  const handleReinvite = async (userEmail: string, role: string) => {
-    try {
-      await authApi.invite(userEmail, role as 'Agent' | 'Supervisor');
-      await loadUsers();
-      setActionMenuOpen(null);
-      setMenuPos(null);
-    } catch (error) {
-      console.error('Error reenviando invitación:', error);
-    }
-  };
-
-  const handleUpdateStatus = async (userEmail: string, newStatus: 'pending' | 'active' | 'revoked') => {
-    try {
-      setUsers(prevUsers =>
-        prevUsers.map(user =>
-          user.email === userEmail ? { ...user, status: newStatus } : user
-        )
-      );
-      setActionMenuOpen(null);
-      setMenuPos(null);
-
-      await authApi.updateUserStatus(userEmail, newStatus);
-      await loadUsers();
-    } catch (error) {
-      console.error('Error actualizando estado:', error);
-      await loadUsers();
-    }
-  };
-
-  const handleUpdateRole = async (userEmail: string, newRole: 'Agent' | 'Supervisor') => {
-    try {
-      await authApi.updateUserRole(userEmail, newRole);
-      await loadUsers();
-      setActionMenuOpen(null);
-      setMenuPos(null);
-    } catch (error) {
-      console.error('Error actualizando rol:', error);
-    }
-  };
-
-  const handleCopyInviteLink = async (userEmail: string) => {
-    try {
-      const result = await authApi.invite(
-        userEmail,
-        users.find(u => u.email === userEmail)?.role as 'Agent' | 'Supervisor'
-      );
-      await navigator.clipboard.writeText(result.invite_url);
-      setCopiedEmail(userEmail);
-      setTimeout(() => setCopiedEmail(null), 2000);
-      setActionMenuOpen(null);
-      setMenuPos(null);
-    } catch (error) {
-      console.error('Error copiando enlace:', error);
-    }
-  };
-
-  if (isLoading) {
+  // Early return después de declarar hooks
+  if (!domain || !clientId || !redirect) {
+    console.error('Missing required authentication configuration');
     return (
-      <div className="h-screen flex items-center justify-center bg-gray-50">
-        <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+      <div className="h-screen flex items-center justify-center">
+        <p className="text-red-600">Configuration error. Please contact support.</p>
       </div>
     );
   }
 
-  return (
-    <>
-      <Header showMenuButton={false} />
+  // Validar formato del dominio de Cognito para evitar dominios maliciosos
+  const isValidCognitoDomain =
+    domain.startsWith('https://') &&
+    domain.includes('.auth.') &&
+    domain.includes('.amazoncognito.com');
 
-      <div className="min-h-screen bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="mb-6">
-            <div className="flex items-center justify-between mb-4">
-              <button
-                onClick={() => router.back()}
-                className="flex items-center gap-2 text-gray-600 hover:text-gray-900"
+  if (!isValidCognitoDomain) {
+    console.error('Invalid Cognito domain format:', domain);
+    return (
+      <div className="h-screen flex items-center justify-center">
+        <p className="text-red-600">Configuration error. Please contact support.</p>
+      </div>
+    );
+  }
+
+  const loginUrl = `${domain}/login?client_id=${encodeURIComponent(
+    clientId
+  )}&response_type=code&scope=email+openid+profile&redirect_uri=${encodeURIComponent(
+    redirect
+  )}&identity_provider=Google&prompt=select_account`;
+
+  const handleLogin = () => {
+    window.location.href = loginUrl;
+  };
+
+  const handleNewChat = () => {
+    setChatKey((prev) => prev + 1);
+    if (isMobile) {
+      setSidebarVisible(false);
+    }
+  };
+
+  const handleTemplateSelect = (template: string) => {
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(
+        new CustomEvent('chat:set-template', { detail: template })
+      );
+    }
+    if (isMobile) {
+      setSidebarVisible(false);
+    }
+  };
+
+  const toggleSidebar = () => {
+    setSidebarVisible((prev) => !prev);
+  };
+
+  if (!isMounted || isLoadingAuth) {
+    return (
+      <div className="h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <Loader2 className="w-8 h-8 animate-spin text-blue-600 mx-auto mb-4" />
+          <p className="text-gray-600">Cargando...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Estado no autenticado
+  if (!user) {
+    return (
+      <div
+        className="min-h-screen grid place-items-center p-4"
+        style={{
+          background:
+            'radial-gradient(circle at center, #01a9e0 0%, #d9f2fa 50%, white 100%)',
+        }}
+      >
+        <div
+          className="relative w-full max-w-md rounded-3xl bg-white shadow-xl px-10 py-20 sm:py-32 md:py-40 flex flex-col items-center justify-between"
+          style={{ fontFamily: 'var(--font-figtree), sans-serif' }}
+        >
+          <div className="flex flex-col items-center text-center space-y-8">
+            <img
+              src="/logo-spot3x.png"
+              alt="Spot"
+              className="h-18 w-auto"
+            />
+
+            <p className="text-[12px] tracking-[0.18em] font-semibold text-black/80 uppercase">
+              Asistente de servicio al cliente
+            </p>
+
+            <div className="h-px w-11/12 bg-gray-200" />
+
+            <p className="text-base text-gray-600">
+              Accede a tu cuenta para continuar.
+            </p>
+
+            <button
+              onClick={handleLogin}
+              className="w-full inline-flex items-center justify-center gap-2 rounded-lg px-6 py-3 text-white text-base font-medium transition-colors"
+              style={{
+                backgroundColor: '#00A9E0',
+                boxShadow: '0px 4px 4px rgba(0, 0, 0, 0.25)',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = '#D9F2FA';
+                e.currentTarget.style.color = '#000000';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = '#00A9E0';
+                e.currentTarget.style.color = '#ffffff';
+              }}
+            >
+              <svg
+                className="h-5 w-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
               >
-                <ArrowLeft className="w-4 h-4" />
-                Volver
-              </button>
-              <button
-                onClick={() => setIsInviteModalOpen(true)}
-                className="flex items-center gap-2 px-4 py-2 text-white rounded-lg transition-colors"
-                style={{
-                  backgroundColor: '#00A9E0',
-                  boxShadow: '0px 4px 4px rgba(0, 0, 0, 0.25)'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = '#D9F2FA';
-                  e.currentTarget.style.color = '#000000';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = '#00A9E0';
-                  e.currentTarget.style.color = '#ffffff';
-                }}
-              >
-                <UserPlus className="w-4 h-4" />
-                Invitar usuario
-              </button>
-            </div>
-            <h1 className="text-3xl font-bold text-gray-900">Administrar usuarios</h1>
-            <p className="text-gray-600 mt-2">Gestiona las invitaciones y usuarios del sistema</p>
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                />
+              </svg>
+              Iniciar sesión con Google
+            </button>
           </div>
 
-          <div className="bg-white rounded-lg shadow">
-            <div className="p-6">
-              {isLoadingUsers ? (
-                <div className="flex items-center justify-center py-12">
-                  <Loader2 className="w-6 h-6 animate-spin text-blue-600" />
-                </div>
-              ) : users.length === 0 ? (
-                <div className="text-center py-12">
-                  <p className="text-gray-500">No hay usuarios registrados aún.</p>
-                  <p className="text-sm text-gray-400 mt-2">
-                    Usa el botón &quot;Invitar usuario&quot; arriba para comenzar.
-                  </p>
-                </div>
-              ) : (
-                <div className="overflow-x-auto relative">
-                  <table className="min-w-full divide-y divide-gray-200 overflow-visible">
-                    <thead className="bg-gray-50">
-                      <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Email
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Rol
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Estado
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Invitado por
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Fecha
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Acciones
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                      {users.map((user) => (
-                        <tr key={user.email}>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                            {user.email}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            <span
-                              className={`px-2 py-1 text-xs rounded-full ${
-                                user.role === 'Supervisor'
-                                  ? 'bg-purple-100 text-purple-800'
-                                  : 'bg-blue-100 text-blue-800'
-                              }`}
-                            >
-                              {user.role}
-                            </span>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            <span
-                              className={`px-2 py-1 text-xs rounded-full ${
-                                user.status === 'active'
-                                  ? 'bg-green-100 text-green-800'
-                                  : user.status === 'revoked'
-                                  ? 'bg-red-100 text-red-800'
-                                  : 'bg-gray-100 text-gray-800'
-                              }`}
-                            >
-                              {user.status}
-                            </span>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {user.invited_by}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {new Date(user.created_at).toLocaleDateString()}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            <div className="relative overflow-visible">
-                              <button
-                                onClick={(e) => openMenuAtButton(e, user.email)}
-                                className="p-2 hover:bg-gray-100 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-sky-400"
-                              >
-                                <MoreVertical className="w-4 h-4" />
-                              </button>
-
-                              {actionMenuOpen === user.email && menuPos && (
-                                <div
-                                  className="fixed z-50 w-[240px] rounded-xl bg-white shadow-lg border border-gray-200"
-                                  style={{ top: menuPos.top, left: menuPos.left }}
-                                >
-                                  <div className="py-2">
-                                    {user.status === 'pending' && (
-                                      <>
-                                        <button
-                                          onClick={() => handleUpdateStatus(user.email, 'active')}
-                                          className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
-                                        >
-                                          <CheckCircle className="w-4 h-4" />
-                                          Activar
-                                        </button>
-                                        <button
-                                          onClick={() => handleReinvite(user.email, user.role)}
-                                          className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
-                                        >
-                                          <RefreshCw className="w-4 h-4" />
-                                          Reenviar
-                                        </button>
-                                        <button
-                                          onClick={() => handleCopyInviteLink(user.email)}
-                                          className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
-                                        >
-                                          <Copy className="w-4 h-4" />
-                                          {copiedEmail === user.email ? 'Copiado!' : 'Copiar enlace'}
-                                        </button>
-                                      </>
-                                    )}
-
-                                    {user.status === 'active' && (
-                                      <>
-                                        <button
-                                          onClick={() => handleReinvite(user.email, user.role)}
-                                          className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
-                                        >
-                                          <RefreshCw className="w-4 h-4" />
-                                          Reinvitar
-                                        </button>
-                                        <button
-                                          onClick={() =>
-                                            handleUpdateRole(
-                                              user.email,
-                                              user.role === 'Agent' ? 'Supervisor' : 'Agent'
-                                            )
-                                          }
-                                          className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
-                                        >
-                                          <RotateCcw className="w-4 h-4" />
-                                          Cambiar a {user.role === 'Agent' ? 'Supervisor' : 'Agent'}
-                                        </button>
-                                        <button
-                                          onClick={() => handleUpdateStatus(user.email, 'revoked')}
-                                          className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
-                                        >
-                                          <Ban className="w-4 h-4" />
-                                          Revocar
-                                        </button>
-                                      </>
-                                    )}
-
-                                    {user.status === 'revoked' && (
-                                      <>
-                                        <button
-                                          onClick={() => handleUpdateStatus(user.email, 'active')}
-                                          className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
-                                        >
-                                          <RotateCcw className="w-4 h-4" />
-                                          Reactivar
-                                        </button>
-                                        <button
-                                          onClick={() =>
-                                            handleUpdateRole(
-                                              user.email,
-                                              user.role === 'Agent' ? 'Supervisor' : 'Agent'
-                                            )
-                                          }
-                                          className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
-                                        >
-                                          <RotateCcw className="w-4 h-4" />
-                                          Cambiar a {user.role === 'Agent' ? 'Supervisor' : 'Agent'}
-                                        </button>
-                                      </>
-                                    )}
-                                  </div>
-                                </div>
-                              )}
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </div>
+          <div className="absolute bottom-6 left-0 right-0 flex items-center justify-center gap-2 opacity-70">
+            <span className="text-sm text-gray-400">Impulsado por</span>
+            <img
+              src="/logo-muscle.png"
+              alt="Muscle logo"
+              className="h-4 w-auto"
+            />
           </div>
         </div>
+      </div>
+    );
+  }
 
-        <InviteModal
-          isOpen={isInviteModalOpen}
-          onClose={() => setIsInviteModalOpen(false)}
-          onInviteSuccess={loadUsers}
-        />
+  // Estado autenticado
+  return (
+    <div className="h-screen flex flex-col bg-gray-100">
+      <Header onToggleSidebar={toggleSidebar} />
 
-        {actionMenuOpen && (
+      <div className="flex-1 flex overflow-hidden relative">
+        {sidebarVisible && isMobile && (
           <div
-            className="fixed inset-0 z-40"
-            onClick={() => {
-              setActionMenuOpen(null);
-              setMenuPos(null);
-            }}
+            className="fixed inset-0 bg-white bg-opacity-50 z-30"
+            onClick={toggleSidebar}
           />
         )}
+
+        {sidebarVisible && (
+          <div
+            className={`
+              fixed md:relative
+              left-0 top-0 h-full z-50
+              w-64 transition-all duration-300 ease-in-out
+              ${sidebarVisible ? 'translate-x-0' : '-translate-x-full'}
+            `}
+          >
+            <Sidebar
+              onNewChat={handleNewChat}
+              onTemplateSelect={handleTemplateSelect}
+            />
+          </div>
+        )}
+
+        <div className="flex-1 flex flex-col bg-white min-w-0 relative z-40 md:z-0">
+          <ChatInterface key={chatKey} />
+        </div>
       </div>
-    </>
+    </div>
   );
 }
