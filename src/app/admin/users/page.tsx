@@ -1,7 +1,7 @@
 // src/app/admin/users/page.tsx
 'use client';
 
-import { useState, useEffect, MouseEvent } from 'react';
+import { useState, useEffect, useCallback, MouseEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { authApi } from '@/lib/api';
 import { useAuth } from '@/context/AuthContext';
@@ -27,7 +27,7 @@ export default function AdminUsersPage() {
   const [users, setUsers] = useState<InvitedUser[]>([]);
   const [isLoadingUsers, setIsLoadingUsers] = useState(true);
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
-  const [selectedUser, setSelectedUser] = useState<InvitedUser | null>(null);
+  const [, setSelectedUser] = useState<InvitedUser | null>(null);
   const [actionMenuOpen, setActionMenuOpen] = useState<string | null>(null);
   const [copiedEmail, setCopiedEmail] = useState<string | null>(null);
   const [menuPos, setMenuPos] = useState<MenuPosition>(null);
@@ -44,7 +44,7 @@ export default function AdminUsersPage() {
     }
   }, [user, isLoading, router]);
 
-  const loadUsers = async () => {
+  const loadUsers = useCallback(async () => {
     const groups = user?.groups ?? [];
     if (groups.includes('Supervisor')) {
       try {
@@ -57,14 +57,11 @@ export default function AdminUsersPage() {
         setIsLoadingUsers(false);
       }
     }
-  };
+  }, [user]);
 
   useEffect(() => {
-    const groups = user?.groups ?? [];
-    if (groups.includes('Supervisor')) {
-      loadUsers();
-    }
-  }, [user]);
+    loadUsers();
+  }, [loadUsers]);
 
   // Cerrar menú en scroll/resize (evita desalineo si el usuario se mueve)
   useEffect(() => {
@@ -213,7 +210,7 @@ export default function AdminUsersPage() {
                 <div className="text-center py-12">
                   <p className="text-gray-500">No hay usuarios registrados aún.</p>
                   <p className="text-sm text-gray-400 mt-2">
-                    Usa el botón "Invitar usuario" arriba para comenzar.
+                    Usa el botón &quot;Invitar usuario&quot; arriba para comenzar.
                   </p>
                 </div>
               ) : (

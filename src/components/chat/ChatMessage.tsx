@@ -13,7 +13,6 @@ import MessageVisual from './MessageVisual';
 import { User } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import Image from "next/image";
-import lupa from "@/public/icono-logo.png";
 
 interface ChatMessageProps {
   message: ChatMessageType;

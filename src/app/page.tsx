@@ -2,16 +2,18 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { Header } from '@/components/ui/Header';
 import { Sidebar } from '@/components/sidebar/Sidebar';
 import { ChatInterface } from '@/components/chat/ChatInterface';
 import { useAuth } from '@/context/AuthContext';
-import { LogIn, Loader2 } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 
 export default function Home() {
   const [chatKey, setChatKey] = useState(0);
   const [sidebarVisible, setSidebarVisible] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
   const { user, isLoading: isLoadingAuth } = useAuth();
 
   // Cognito configuration
@@ -19,17 +21,7 @@ export default function Home() {
   const clientId = process.env.NEXT_PUBLIC_COGNITO_CLIENT_ID;
   const redirect = process.env.NEXT_PUBLIC_OAUTH_REDIRECT_URI;
   
-  if (!domain || !clientId || !redirect) {
-    console.error('Missing required authentication configuration');
-    return (
-      <div className="h-screen flex items-center justify-center">
-        <p className="text-red-600">Configuration error. Please contact support.</p>
-      </div>
-    );
-  }
-  
-  const loginUrl = `${domain}/login?client_id=${clientId}&response_type=code&scope=email+openid+profile&redirect_uri=${encodeURIComponent(redirect)}&identity_provider=Google&prompt=select_account`;
-  
+  // Hooks must be called before any early returns
   useEffect(() => {
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 768);
@@ -40,6 +32,22 @@ export default function Home() {
     
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  // Early return after all hooks
+  if (!domain || !clientId || !redirect) {
+    console.error('Missing required authentication configuration');
+    return (
+      <div className="h-screen flex items-center justify-center">
+        <p className="text-red-600">Configuration error. Please contact support.</p>
+      </div>
+    );
+  }
+  
+  const loginUrl = `${domain}/login?client_id=${clientId}&response_type=code&scope=email+openid+profile&redirect_uri=${encodeURIComponent(redirect)}&identity_provider=Google&prompt=select_account`;
 
   const handleLogin = () => {
     window.location.href = loginUrl;
@@ -70,12 +78,6 @@ export default function Home() {
 
   // Mostrar pantalla de login si no está autenticado
   // Solo mostrar loading en el cliente para evitar hydration mismatch
-  const [isMounted, setIsMounted] = useState(false);
-  
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
-
   if (!isMounted || isLoadingAuth) {
     return (
       <div className="h-screen flex items-center justify-center bg-gray-50">
@@ -104,9 +106,11 @@ export default function Home() {
           {/* Contenedor principal del contenido */}
           <div className="flex flex-col items-center text-center space-y-8">
             {/* Logo principal */}
-            <img
+            <Image
               src="/logo-spot3x.png"
               alt="Spot"
+              width={200}
+              height={60}
               className="h-18 w-auto"
             />
   
@@ -160,9 +164,11 @@ export default function Home() {
           {/* Impulsado por Muscle (al fondo) */}
           <div className="absolute bottom-6 left-0 right-0 flex items-center justify-center gap-2 opacity-70">
             <span className="text-sm text-gray-400">Impulsado por</span>
-            <img
+            <Image
               src="/logo-muscle.png"
               alt="Muscle logo"
+              width={60}
+              height={16}
               className="h-4 w-auto"
             />
           </div>
