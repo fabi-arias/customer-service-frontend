@@ -70,22 +70,28 @@ export function ChatInterface({ initialInput }: ChatInterfaceProps) {
   const sendMessage = async () => {
     if (!inputMessage.trim() || isLoading) return;
 
+    // Guardar el mensaje antes de limpiarlo
+    const messageToSend = inputMessage.trim();
+
     const userMessage: ChatMessageType = {
       id: Date.now().toString(),
       role: 'user',
-      content: inputMessage,
+      content: messageToSend,
       timestamp: new Date().toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })
     };
 
     setMessages(prev => [...prev, userMessage]);
-    setInputMessage('');
+    setInputMessage(''); // Limpiar el input después de guardar el mensaje
     setIsLoading(true);
 
     try {
       const response = await chatApi.sendMessage({
-        message: inputMessage,
+        message: messageToSend,
         session_id: sessionId || undefined
       });
+
+      console.log('🟣 TRACE desde frontend:', response.trace);
+      console.log('🟣 session_id desde frontend:', response.session_id);
 
       if (response.success) {
         // Update session ID if provided
@@ -138,7 +144,7 @@ export function ChatInterface({ initialInput }: ChatInterfaceProps) {
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
+    if (e.key === 'Enter' && !e.shiftKey && !isLoading) {
       e.preventDefault();
       sendMessage();
     }
@@ -217,16 +223,15 @@ export function ChatInterface({ initialInput }: ChatInterfaceProps) {
       {/* Chat Input */}
       <div className="border-t border-gray-200 p-3 sm:p-4">
         <div className="flex items-center gap-2 sm:gap-3">
-          <div className="flex-1 bg-gray-100 rounded-full px-3 sm:px-4 py-2 sm:py-3">
+          <div className={`flex-1 bg-gray-100 rounded-full px-3 sm:px-4 py-2 sm:py-3 ${isLoading ? 'opacity-75' : ''}`}>
             <textarea
               ref={textareaRef}
               value={inputMessage}
               onChange={(e) => setInputMessage(e.target.value)}
               onKeyPress={handleKeyPress}
-              placeholder="Escribe tu mensaje aquí..."
+              placeholder={isLoading ? "Escribe tu siguiente mensaje..." : "Escribe tu mensaje aquí..."}
               className="w-full resize-none bg-transparent border-none outline-none text-gray-900 placeholder-gray-500 text-sm sm:text-base"
               rows={1}
-              disabled={isLoading}
             />
           </div>
           <button
