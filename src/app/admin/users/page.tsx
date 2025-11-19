@@ -102,12 +102,14 @@ export default function AdminUsersPage() {
 
   const handleReinvite = async (userEmail: string, role: string) => {
     try {
-      await authApi.invite(userEmail, role as 'Agent' | 'Supervisor');
-      await loadUsers();
       setActionMenuOpen(null);
       setMenuPos(null);
-    } catch (error) {
+      await authApi.invite(userEmail, role as 'Agent' | 'Supervisor');
+      await loadUsers();
+      // El correo se ha reenviado exitosamente
+    } catch (error: any) {
       console.error('Error reenviando invitación:', error);
+      alert(error.response?.data?.detail || 'Error al reenviar la invitación');
     }
   };
 
@@ -295,18 +297,18 @@ export default function AdminUsersPage() {
                                     {user.status === 'pending' && (
                                       <>
                                         <button
+                                          onClick={() => handleReinvite(user.email, user.role)}
+                                          className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
+                                        >
+                                          <RefreshCw className="w-4 h-4" />
+                                          Reinvitar
+                                        </button>
+                                        <button
                                           onClick={() => handleUpdateStatus(user.email, 'active')}
                                           className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
                                         >
                                           <CheckCircle className="w-4 h-4" />
                                           Activar
-                                        </button>
-                                        <button
-                                          onClick={() => handleReinvite(user.email, user.role)}
-                                          className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
-                                        >
-                                          <RefreshCw className="w-4 h-4" />
-                                          Reenviar
                                         </button>
                                         <button
                                           onClick={() => handleCopyInviteLink(user.email)}
@@ -320,13 +322,6 @@ export default function AdminUsersPage() {
 
                                     {user.status === 'active' && (
                                       <>
-                                        <button
-                                          onClick={() => handleReinvite(user.email, user.role)}
-                                          className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
-                                        >
-                                          <RefreshCw className="w-4 h-4" />
-                                          Reinvitar
-                                        </button>
                                         <button
                                           onClick={() =>
                                             handleUpdateRole(
