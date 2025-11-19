@@ -8,7 +8,7 @@ const API_BASE_URL = config.apiUrl;
 
 const api = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 30000, // 30s
+  timeout: 90000, // 90s (1 minuto y medio)
   withCredentials: true, // Cookies HttpOnly
   headers: { 'Content-Type': 'application/json' },
 });

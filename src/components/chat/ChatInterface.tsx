@@ -122,11 +122,11 @@ export function ChatInterface({ initialInput }: ChatInterfaceProps) {
       
       if (error instanceof Error) {
         if (error.message.includes('timeout')) {
-          errorMessage = '⏱️ La consulta está tardando mucho. El sistema está procesando tu solicitud, por favor espera...';
+          errorMessage = 'La consulta está tardando mucho. El sistema está procesando tu solicitud, por favor espera...';
         } else if (error.message.includes('Network Error')) {
-          errorMessage = '🌐 Error de conexión con el servidor. Verifica que el backend esté ejecutándose.';
+          errorMessage = 'Error de conexión con el servidor. Verifica que el backend esté ejecutándose.';
         } else {
-          errorMessage = `❌ Error: ${error.message}`;
+          errorMessage = `Error: ${error.message}`;
         }
       }
 
