@@ -11,6 +11,18 @@ const nextConfig: NextConfig = {
     // Aquí puedes mapear variables de entorno explícitamente si lo necesitas
     // Next.js cargará automáticamente las variables NEXT_PUBLIC_* de .env.local
   },
+
+  // Configuración para evitar que Next.js maneje rutas de API del backend
+  // Estas rutas deben ser manejadas por el backend FastAPI, no por Next.js
+  async rewrites() {
+    return {
+      // No hacer rewrite de rutas de API - deben ir directamente al backend
+      // El proxy/load balancer debe enrutar /api/* y /auth/* al backend
+      beforeFiles: [],
+      afterFiles: [],
+      fallback: [],
+    };
+  },
 };
 
 export default nextConfig;
