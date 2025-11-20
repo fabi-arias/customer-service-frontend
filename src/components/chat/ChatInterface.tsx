@@ -90,9 +90,6 @@ export function ChatInterface({ initialInput }: ChatInterfaceProps) {
         session_id: sessionId || undefined
       });
 
-      console.log('🟣 TRACE desde frontend:', response.trace);
-      console.log('🟣 session_id desde frontend:', response.session_id);
-
       if (response.success) {
         // Update session ID if provided
         if (response.session_id) {

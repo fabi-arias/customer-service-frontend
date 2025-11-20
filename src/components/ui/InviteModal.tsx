@@ -2,7 +2,7 @@
 'use client';
 
 import { useState } from 'react';
-import { X, Copy, Check, Loader2 } from 'lucide-react';
+import { X, Copy, Check, Loader2, Mail, UserCog, Send, CheckCircle2, AlertCircle, Link2, UserPlus } from 'lucide-react';
 import { authApi } from '@/lib/api';
 
 interface InviteModalProps {
@@ -69,77 +69,107 @@ export function InviteModal({ isOpen, onClose, onInviteSuccess }: InviteModalPro
   };
 
   return (
-    // Overlay (más suave y con blur)
-    <div className="fixed inset-0 z-50 grid place-items-center p-4 bg-black/20 backdrop-blur-[2px]">
-      {/* Card (rounded-3xl + sombra limpia + ring sutil) */}
-      <div className="bg-white rounded-3xl shadow-[0_10px_30px_rgba(0,0,0,0.12)] ring-1 ring-black/5 max-w-md w-full max-h-[90vh] overflow-y-auto">
-        {/* Header (sin línea dura, más aire, botón cerrar cómodo) */}
-        <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100">
-          <h2 className="text-lg sm:text-xl font-semibold text-gray-900">Invitar usuario</h2>
-          <button
-            onClick={handleClose}
-            className="p-2.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
-            aria-label="Cerrar"
-          >
-            <X className="w-5 h-5" />
-          </button>
+    <div className="fixed inset-0 z-50 grid place-items-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in duration-200">
+      <div className="bg-white rounded-2xl shadow-2xl ring-1 ring-black/5 max-w-lg w-full max-h-[90vh] overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col">
+        {/* Header con gradiente sutil */}
+        <div className="relative bg-gradient-to-r from-[#00A9E0]/5 via-[#00A9E0]/10 to-[#00A9E0]/5 px-6 py-5 border-b border-gray-100">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-[#00A9E0]/10 rounded-xl">
+                <UserPlus className="w-5 h-5 text-[#00A9E0]" />
+              </div>
+              <div>
+                <h2 className="text-xl font-bold text-gray-900">Invitar Usuario</h2>
+                <p className="text-xs text-gray-500 mt-0.5">Agrega un nuevo miembro al equipo</p>
+              </div>
+            </div>
+            <button
+              onClick={handleClose}
+              className="p-2 rounded-xl text-gray-400 hover:text-gray-600 hover:bg-white/80 transition-all duration-200"
+              aria-label="Cerrar"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
         </div>
 
-        {/* Body (SIN cambios por ahora) */}
-        <div className="p-6">
+        {/* Body */}
+        <div className="p-6 overflow-y-auto flex-1">
           {!inviteUrl ? (
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-                  Email
+            <form onSubmit={handleSubmit} className="space-y-6">
+              {/* Campo Email */}
+              <div className="space-y-2">
+                <label htmlFor="email" className="text-sm font-semibold text-gray-700 mb-1">
+                  Correo electrónico
                 </label>
-                <input
-                  id="email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="usuario@musclepoints.com"
-                  required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00A9E0] focus:border-[#00A9E0]"
-                />
-                <p className="mt-1 text-xs text-gray-500">Debe ser del dominio @musclepoints.com</p>
+                <div className="relative">
+                  <input
+                    id="email"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="usuario@musclepoints.com"
+                    required
+                    className="w-full px-4 py-3 pl-11 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#00A9E0]/20 focus:border-[#00A9E0] transition-all duration-200 bg-gray-50/50 hover:bg-gray-50"
+                  />
+                  <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                </div>
+                <p className="text-xs text-gray-500 flex items-center gap-1">
+                  <AlertCircle className="w-3 h-3" />
+                  Debe ser del dominio @musclepoints.com
+                </p>
               </div>
 
-              <div>
-                <label htmlFor="role" className="block text-sm font-medium text-gray-700 mb-2">
-                  Rol
+              {/* Campo Rol */}
+              <div className="space-y-2">
+                <label htmlFor="role" className="text-sm font-semibold text-gray-700">
+                  Rol del Usuario
                 </label>
-                <select
-                  id="role"
-                  value={role}
-                  onChange={(e) => setRole(e.target.value as 'Agent' | 'Supervisor')}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00A9E0] focus:border-[#00A9E0]"
-                >
-                  <option value="Agent">Agent</option>
-                  <option value="Supervisor">Supervisor</option>
-                </select>
+                <div className="relative">
+                  <select
+                    id="role"
+                    value={role}
+                    onChange={(e) => setRole(e.target.value as 'Agent' | 'Supervisor')}
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#00A9E0]/20 focus:border-[#00A9E0] transition-all duration-200 bg-gray-50/50 hover:bg-gray-50 appearance-none cursor-pointer"
+                  >
+                    <option value="Agent">Agent</option>
+                    <option value="Supervisor">Supervisor</option>
+                  </select>
+                  <div className="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none">
+                    <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </div>
+                </div>
               </div>
 
+
+
+              {/* Error Message */}
               {error && (
-                <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
-                  <p className="text-sm text-red-600">{error}</p>
+                <div className="p-4 bg-red-50 border-2 border-red-200 rounded-xl animate-in slide-in-from-top-2 duration-200">
+                  <div className="flex items-start gap-3">
+                    <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+                    <p className="text-sm text-red-700 font-medium">{error}</p>
+                  </div>
                 </div>
               )}
 
-              <div className="flex gap-3 pt-4">
+              {/* Botones de acción */}
+              <div className="flex gap-3 pt-2">
                 <button
                   type="button"
                   onClick={handleClose}
-                  className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                  className="flex-1 px-4 py-3 border-2 border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 hover:border-gray-300 transition-all duration-200 font-medium"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="flex-1 px-4 py-2 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  className="flex-1 px-4 py-3 text-white rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 font-semibold"
                   style={{
-                    backgroundColor: isSubmitting ? '#00A9E0' : '#00A9E0',
+                    backgroundColor: '#00A9E0',
                     boxShadow: '0px 4px 4px rgba(0, 0, 0, 0.25)'
                   }}
                   onMouseEnter={(e) => {
@@ -161,48 +191,68 @@ export function InviteModal({ isOpen, onClose, onInviteSuccess }: InviteModalPro
                       Enviando...
                     </>
                   ) : (
-                    'Enviar Invitación'
+                    <>
+                      <Send className="w-4 h-4" />
+                      Enviar Invitación
+                    </>
                   )}
                 </button>
               </div>
             </form>
           ) : (
-            <div className="space-y-4">
-              <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
-                <div className="flex items-center gap-2 text-green-700 mb-2">
-                  <Check className="w-5 h-5" />
-                  <span className="font-medium">Invitación enviada</span>
+            <div className="space-y-6">
+              {/* Mensaje de éxito */}
+              <div className="relative p-6 bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-200 rounded-2xl animate-in zoom-in-95 duration-300">
+                <div className="flex items-start gap-4">
+                  <div className="p-3 bg-green-100 rounded-xl">
+                    <CheckCircle2 className="w-6 h-6 text-green-600" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-lg font-bold text-green-900 mb-1">¡Invitación Enviada!</h3>
+                    <p className="text-sm text-green-700 mb-2">
+                      Se ha enviado la invitación a <strong className="font-semibold">{email}</strong>
+                    </p>
+                    {!emailSent && (
+                      <div className="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                        <p className="text-xs text-yellow-800 flex items-start gap-2">
+                          <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                          <span>El email no pudo ser enviado automáticamente. Usa el enlace de abajo para compartir la invitación manualmente.</span>
+                        </p>
+                      </div>
+                    )}
+                  </div>
                 </div>
-                <p className="text-sm text-green-600">
-                  Se ha enviado la invitación a <strong>{email}</strong>
-                </p>
-                {!emailSent && (
-                  <p className="text-xs text-yellow-600 mt-2">
-                    ⚠️ El email no pudo ser enviado automáticamente. Usa el enlace de abajo para compartir la invitación.
-                  </p>
-                )}
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Enlace de invitación
+              {/* Enlace de invitación */}
+              <div className="space-y-2">
+                <label className="flex items-center gap-2 text-sm font-semibold text-gray-700">
+                  <Link2 className="w-4 h-4 text-[#00A9E0]" />
+                  Enlace de Invitación
                 </label>
                 <div className="flex gap-2">
-                  <input
-                    type="text"
-                    value={inviteUrl}
-                    readOnly
-                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-sm"
-                  />
+                  <div className="relative flex-1">
+                    <input
+                      type="text"
+                      value={inviteUrl}
+                      readOnly
+                      className="w-full px-4 py-3 pr-12 border-2 border-gray-200 rounded-xl bg-gray-50 text-sm font-mono text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#00A9E0]/20 focus:border-[#00A9E0]"
+                    />
+                    <Link2 className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  </div>
                   <button
                     onClick={handleCopy}
-                    className="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors flex items-center gap-2"
+                    className={`px-5 py-3 rounded-xl transition-all duration-200 flex items-center gap-2 font-medium ${
+                      copied
+                        ? 'bg-green-100 text-green-700 border-2 border-green-200'
+                        : 'bg-gray-100 text-gray-700 border-2 border-gray-200 hover:bg-gray-200 hover:border-gray-300'
+                    }`}
                     title="Copiar enlace"
                   >
                     {copied ? (
                       <>
-                        <Check className="w-4 h-4 text-green-600" />
-                        <span className="text-sm text-green-600">Copiado</span>
+                        <Check className="w-4 h-4" />
+                        <span className="text-sm">Copiado</span>
                       </>
                     ) : (
                       <>
@@ -214,9 +264,10 @@ export function InviteModal({ isOpen, onClose, onInviteSuccess }: InviteModalPro
                 </div>
               </div>
 
+              {/* Botón cerrar */}
               <button
                 onClick={handleClose}
-                className="w-full px-4 py-2 text-white rounded-lg transition-colors"
+                className="w-full px-4 py-3 text-white rounded-xl transition-colors font-semibold"
                 style={{
                   backgroundColor: '#00A9E0',
                   boxShadow: '0px 4px 4px rgba(0, 0, 0, 0.25)'

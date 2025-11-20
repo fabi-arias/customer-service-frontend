@@ -77,26 +77,14 @@ export function Sidebar({ onNewChat, onTemplateSelect }: SidebarProps) {
   }, [isUserMenuOpen]);
 
   const handleLogout = async () => {
-    console.log('🚪 Iniciando logout...');
-    
     try {
-      // 1. Primero, limpiar la cookie del backend
-      console.log('📤 Llamando a authApi.logout()...');
       await authApi.logout();
-      console.log('✅ Cookie del backend eliminada');
     } catch (error) {
-      console.error('❌ Error en logout del backend:', error);
-      // Continuar con el logout local aunque falle el backend
+      console.error('Error en logout del backend:', error);
     }
     
-    // 2. Limpiar cache y disparar evento para actualizar contexto
-    // Esto actualizará la UI sin necesidad de recargar la página
     clearUser();
     window.dispatchEvent(new CustomEvent('auth:unauthorized'));
-    
-    // 3. El contexto ya manejará el cambio de UI mostrando la pantalla de login
-    // No necesitamos hacer window.location.replace ya que React manejará el cambio
-    console.log('✅ Logout completado');
   };
 
   return (
